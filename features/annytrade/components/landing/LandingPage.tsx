@@ -362,10 +362,23 @@ export function LandingPage() {
                 <div className="atl-device-top">
                   <div>
                     <div className="atl-device-pair">Wallet</div>
-                    <div className="atl-device-balance">$120.00</div>
+                    <div className="atl-device-balance">$12,480.00</div>
                   </div>
                 </div>
-                <div style={{ flex: 1 }} />
+                <div className="atl-wallet-rows" aria-hidden>
+                  <div>
+                    <span>Cash</span>
+                    <strong>$8,240</strong>
+                  </div>
+                  <div>
+                    <span>Positions</span>
+                    <strong>$4,240</strong>
+                  </div>
+                  <div>
+                    <span>Today</span>
+                    <strong className="atl-up">+$186</strong>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
