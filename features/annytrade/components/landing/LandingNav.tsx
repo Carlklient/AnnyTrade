@@ -73,13 +73,13 @@ export function LandingNav() {
       <div className="atl-nav-actions">
         <Link
           href={annytradeRoutes.auth.login}
-          className="atl-btn atl-btn-ghost atl-btn-login"
+          className="atl-btn atl-btn-ghost atl-btn-login atl-nav-desktop"
         >
           Log in
         </Link>
         <Link
           href={annytradeRoutes.auth.register}
-          className="atl-btn atl-btn-primary"
+          className="atl-btn atl-btn-primary atl-nav-desktop"
         >
           Sign up
         </Link>

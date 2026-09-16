@@ -162,11 +162,13 @@ export function AuthView({ variant }: { variant: AuthVariant }) {
     <div
       data-annytrade
       data-at-theme="light"
-      className="flex min-h-dvh items-center justify-center px-4 py-10"
+      className="flex min-h-dvh items-center justify-center px-4 py-8 sm:py-10"
       style={{
         background:
           "radial-gradient(900px 500px at 20% 0%, color-mix(in srgb, var(--at-accent) 10%, transparent), transparent), #f3f5f8",
         color: "#020617",
+        paddingBottom: "max(2rem, env(safe-area-inset-bottom))",
+        paddingTop: "max(2rem, env(safe-area-inset-top))",
       }}
     >
       <div className="at-card w-full max-w-md shadow-sm">
@@ -174,7 +176,7 @@ export function AuthView({ variant }: { variant: AuthVariant }) {
           <AnnyTradeLogo />
           <div>
             <h1
-              className="text-xl font-extrabold"
+              className="text-[1.35rem] font-extrabold sm:text-xl"
               style={{
                 fontFamily: "var(--at-font-display)",
                 color: "#020617",

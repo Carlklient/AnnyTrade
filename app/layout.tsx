@@ -1,3 +1,4 @@
+import type { Metadata, Viewport } from "next";
 import type { ReactNode } from "react";
 
 import { Providers } from "@/components/providers";
@@ -5,7 +6,7 @@ import { fontVariables } from "@/lib/fonts";
 
 import "./globals.css";
 
-export const metadata = {
+export const metadata: Metadata = {
   title: {
     default: "AnnyTrade",
     template: "%s | AnnyTrade",
@@ -16,6 +17,13 @@ export const metadata = {
     index: true,
     follow: true,
   },
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
+  themeColor: "#2455f4",
 };
 
 export default function RootLayout({
