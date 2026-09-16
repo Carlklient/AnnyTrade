@@ -119,7 +119,7 @@ function BrandMark() {
 
 export function LandingPage() {
   return (
-    <div data-at-landing>
+    <div data-at-landing data-theme="light" className="light">
       <div className="atl-wrap">
         <header className="atl-nav">
           <Link
