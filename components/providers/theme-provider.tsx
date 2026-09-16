@@ -12,7 +12,8 @@ export function ThemeProvider({ children, ...props }: ThemeProviderProps) {
     <NextThemesProvider
       attribute="class"
       defaultTheme={THEME.defaultTheme}
-      enableSystem
+      enableSystem={false}
+      forcedTheme="light"
       disableTransitionOnChange
       storageKey={THEME.storageKey}
       themes={[...THEME.colorSchemes]}

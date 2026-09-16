@@ -993,15 +993,18 @@
 }
 
 [data-at-landing] .atl-reveal {
-  animation: atl-rise 0.65s ease both;
+  /* Keep class for markup compatibility; no opacity fade that can stick */
+  animation: none;
+  opacity: 1;
+  transform: none;
 }
 
-[data-at-landing] .atl-reveal-d1 {
-  animation-delay: 0.08s;
-}
-
+[data-at-landing] .atl-reveal-d1,
 [data-at-landing] .atl-reveal-d2 {
-  animation-delay: 0.16s;
+  animation: none;
+  animation-delay: 0s;
+  opacity: 1;
+  transform: none;
 }
 
 @keyframes atl-rise {
