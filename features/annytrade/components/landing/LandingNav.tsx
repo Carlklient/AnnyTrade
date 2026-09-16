@@ -5,7 +5,7 @@ import { useEffect, useId, useRef, useState } from "react";
 
 import { annytradeRoutes } from "../../lib/routes";
 
-function BrandMark() {
+export function BrandMark() {
   return (
     <span className="atl-brand-mark" aria-hidden>
       <svg width="14" height="14" viewBox="0 0 16 16" fill="none">

@@ -1,7 +1,7 @@
 import Link from "next/link";
 
 import { annytradeRoutes } from "../../lib/routes";
-import { LandingNav } from "./LandingNav";
+import { BrandMark, LandingNav } from "./LandingNav";
 import { TradeDeviceMock } from "./TradeDeviceMock";
 import "../../styles/landing.css";
 
