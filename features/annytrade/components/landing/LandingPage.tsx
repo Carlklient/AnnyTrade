@@ -117,9 +117,40 @@ function BrandMark() {
   );
 }
 
+const INK = { color: "#000000", WebkitTextFillColor: "#000000", opacity: 1 } as const;
+
 export function LandingPage() {
   return (
     <div data-at-landing data-theme="light" className="light">
+      <style>{`
+        [data-at-landing] h1,
+        [data-at-landing] h2,
+        [data-at-landing] h3,
+        [data-at-landing] .atl-headline,
+        [data-at-landing] .atl-section-title,
+        [data-at-landing] .atl-stat strong,
+        [data-at-landing] .atl-grow-list li strong,
+        [data-at-landing] .atl-award p {
+          color: #000 !important;
+          -webkit-text-fill-color: #000 !important;
+          opacity: 1 !important;
+        }
+        [data-at-landing] p,
+        [data-at-landing] .atl-support,
+        [data-at-landing] .atl-section-sub,
+        [data-at-landing] .atl-edge-card p,
+        [data-at-landing] .atl-analyse-card p,
+        [data-at-landing] .atl-grow-list li span,
+        [data-at-landing] .atl-stat span {
+          color: #0f172a !important;
+          -webkit-text-fill-color: #0f172a !important;
+          opacity: 1 !important;
+        }
+        html.dark [data-at-landing],
+        .dark [data-at-landing] {
+          color-scheme: light !important;
+        }
+      `}</style>
       <div className="atl-wrap">
         <header className="atl-nav">
           <Link
@@ -153,14 +184,14 @@ export function LandingPage() {
       <section className="atl-hero">
         <div className="atl-wrap atl-hero-grid">
           <div>
-            <h1 className="atl-headline atl-reveal">
+            <h1 className="atl-headline" style={INK}>
               Broker that empowers your growth
             </h1>
-            <p className="atl-support atl-reveal atl-reveal-d1">
+            <p className="atl-support" style={{ color: "#0f172a" }}>
               Trade with a focused multi-market desk, paper capital, clear
               charts, and tools built to help you practise every decision.
             </p>
-            <div className="atl-cta-row atl-reveal atl-reveal-d2">
+            <div className="atl-cta-row">
               <Link
                 href={annytradeRoutes.auth.register}
                 className="atl-btn atl-btn-primary atl-btn-lg"
@@ -168,18 +199,18 @@ export function LandingPage() {
                 Start trading
               </Link>
             </div>
-            <div className="atl-stats atl-reveal atl-reveal-d2">
+            <div className="atl-stats">
               <div className="atl-stat">
-                <strong>Paper desk</strong>
-                <span>Simulated funds only</span>
+                <strong style={INK}>Paper desk</strong>
+                <span style={{ color: "#0f172a" }}>Simulated funds only</span>
               </div>
               <div className="atl-stat">
-                <strong>Charts + signals</strong>
-                <span>Rule based analysis</span>
+                <strong style={INK}>Charts + signals</strong>
+                <span style={{ color: "#0f172a" }}>Rule based analysis</span>
               </div>
               <div className="atl-stat">
-                <strong>Sandbox ready</strong>
-                <span>Live trading disabled</span>
+                <strong style={INK}>Sandbox ready</strong>
+                <span style={{ color: "#0f172a" }}>Live trading disabled</span>
               </div>
             </div>
           </div>
@@ -189,8 +220,10 @@ export function LandingPage() {
 
       <section className="atl-section">
         <div className="atl-wrap">
-          <h2 className="atl-section-title">Trade with an edge</h2>
-          <p className="atl-section-sub">
+          <h2 className="atl-section-title" style={INK}>
+            Trade with an edge
+          </h2>
+          <p className="atl-section-sub" style={{ color: "#0f172a" }}>
             Everything you need to practise with clarity, without the clutter of
             a noisy brokerage homepage.
           </p>
@@ -198,8 +231,8 @@ export function LandingPage() {
             {EDGE.map((item) => (
               <article key={item.title} className="atl-edge-card">
                 <div className="atl-icon">{item.icon}</div>
-                <h3>{item.title}</h3>
-                <p>{item.body}</p>
+                <h3 style={INK}>{item.title}</h3>
+                <p style={{ color: "#0f172a" }}>{item.body}</p>
               </article>
             ))}
           </div>
@@ -208,13 +241,13 @@ export function LandingPage() {
 
       <section className="atl-section atl-section-soft">
         <div className="atl-wrap">
-          <h2 className="atl-section-title">
+          <h2 className="atl-section-title" style={INK}>
             Analyse markets, trade, and learn without switching apps
           </h2>
           <div className="atl-analyse-grid">
             <article className="atl-analyse-card">
-              <h3>Seamless trading across devices</h3>
-              <p>
+              <h3 style={INK}>Seamless trading across devices</h3>
+              <p style={{ color: "#0f172a" }}>
                 Responsive desk layout for desktop and mobile, same paper
                 account, same watchlists.
               </p>
@@ -224,8 +257,8 @@ export function LandingPage() {
               </div>
             </article>
             <article className="atl-analyse-card">
-              <h3>Customizable trading feed</h3>
-              <p>
+              <h3 style={INK}>Customizable trading feed</h3>
+              <p style={{ color: "#0f172a" }}>
                 Watchlists, news, and calendar modules so your desk reflects how
                 you work.
               </p>
@@ -235,8 +268,8 @@ export function LandingPage() {
               </div>
             </article>
             <article className="atl-analyse-card">
-              <h3>Signal & risk support</h3>
-              <p>
+              <h3 style={INK}>Signal & risk support</h3>
+              <p style={{ color: "#0f172a" }}>
                 Educational rule based signals with clear disclosures, never
                 presented as guaranteed outcomes.
               </p>
@@ -292,12 +325,14 @@ export function LandingPage() {
             </div>
           </div>
           <div>
-            <h2>Grow faster with expert tools and community backup</h2>
+            <h2 style={INK}>
+              Grow faster with expert tools and community backup
+            </h2>
             <ul className="atl-grow-list">
               {GROW.map((item) => (
                 <li key={item.title}>
-                  <strong>{item.title}</strong>
-                  <span>{item.body}</span>
+                  <strong style={INK}>{item.title}</strong>
+                  <span style={{ color: "#0f172a" }}>{item.body}</span>
                 </li>
               ))}
             </ul>
@@ -307,10 +342,10 @@ export function LandingPage() {
 
       <section className="atl-section atl-section-soft">
         <div className="atl-wrap">
-          <h2 className="atl-section-title">
+          <h2 className="atl-section-title" style={INK}>
             Built as a serious trading platform
           </h2>
-          <p className="atl-section-sub">
+          <p className="atl-section-sub" style={{ color: "#0f172a" }}>
             Product milestones, not industry awards. AnnyTrade does not claim
             SEC, FCA, or FINRA approval.
           </p>
@@ -327,8 +362,10 @@ export function LandingPage() {
                     />
                   </svg>
                 </div>
-                <div className="year">{m.year}</div>
-                <p>{m.label}</p>
+                <div className="year" style={{ color: "#0f172a" }}>
+                  {m.year}
+                </div>
+                <p style={INK}>{m.label}</p>
               </div>
             ))}
           </div>
@@ -383,8 +420,8 @@ export function LandingPage() {
             </div>
           </div>
           <div>
-            <h2>Trade on the go with the AnnyTrade desk</h2>
-            <p>
+            <h2 style={INK}>Trade on the go with the AnnyTrade desk</h2>
+            <p style={{ color: "#0f172a" }}>
               Open the web desk on any device. Scan to jump straight into
               account creation, no app-store install required for this demo.
             </p>
