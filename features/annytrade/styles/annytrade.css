@@ -1,0 +1,303 @@
+/* AnnyTrade scoped design system — graphite / off-white / ember crimson */
+[data-annytrade] {
+  --at-bg: #0e1013;
+  --at-bg-elevated: #14181e;
+  --at-surface: #181c22;
+  --at-surface-2: #1e232b;
+  --at-surface-3: #252b35;
+  --at-border: #2c3340;
+  --at-border-strong: #3a4354;
+  --at-border-metal: color-mix(in srgb, #8a93a3 35%, transparent);
+  --at-text: #f2efe9;
+  --at-text-secondary: #a8b0bd;
+  --at-text-muted: #7a8494;
+  --at-accent: #c94b3a;
+  --at-accent-hover: #d85a48;
+  --at-accent-muted: color-mix(in srgb, #c94b3a 18%, transparent);
+  --at-buy: #3f9d6e;
+  --at-buy-muted: color-mix(in srgb, #3f9d6e 16%, transparent);
+  --at-sell: #c94b3a;
+  --at-sell-muted: color-mix(in srgb, #c94b3a 16%, transparent);
+  --at-warning: #d4a017;
+  --at-info: #6b8cae;
+  --at-live: #c94b3a;
+  --at-demo: #6b8cae;
+  --at-shadow:
+    0 1px 0 color-mix(in srgb, #fff 4%, transparent),
+    0 12px 40px color-mix(in srgb, #000 45%, transparent);
+  --at-radius: 10px;
+  --at-radius-sm: 6px;
+  --at-radius-lg: 14px;
+  --at-sidebar-w: 240px;
+  --at-topbar-h: 56px;
+  --at-mobile-nav-h: 64px;
+  --at-font-sans: var(--font-sans), "Plus Jakarta Sans", system-ui, sans-serif;
+  --at-font-display: var(--font-display), Syne, system-ui, sans-serif;
+  --at-font-mono: var(--font-mono), "JetBrains Mono", ui-monospace, monospace;
+
+  color-scheme: dark;
+  background: var(--at-bg);
+  color: var(--at-text);
+  font-family: var(--at-font-sans);
+  min-height: 100dvh;
+}
+
+[data-annytrade][data-at-theme="light"] {
+  --at-bg: #f3f5f8;
+  --at-bg-elevated: #ffffff;
+  --at-surface: #ffffff;
+  --at-surface-2: #f0f2f6;
+  --at-surface-3: #e8ebf0;
+  --at-border: #e3e6ec;
+  --at-border-strong: #94a3b8;
+  --at-border-metal: color-mix(in srgb, #8a93a5 22%, transparent);
+  --at-text: #020617;
+  --at-text-secondary: #020617;
+  --at-text-muted: #020617;
+  --at-accent: #2455f4;
+  --at-accent-hover: #1a45d6;
+  --at-accent-muted: color-mix(in srgb, #2455f4 12%, transparent);
+  --at-buy: #15803d;
+  --at-sell: #dc2626;
+  --at-demo: #2455f4;
+  --at-shadow:
+    0 1px 2px color-mix(in srgb, #111827 4%, transparent),
+    0 8px 24px color-mix(in srgb, #111827 5%, transparent);
+  color-scheme: light;
+}
+
+[data-annytrade] * {
+  border-color: var(--at-border);
+}
+
+[data-annytrade] ::selection {
+  background: var(--at-accent-muted);
+  color: var(--at-text);
+}
+
+.at-shell {
+  display: flex;
+  min-height: 100dvh;
+  background: var(--at-bg);
+}
+
+[data-annytrade]:not([data-at-desk="octa"]).at-shell {
+  background:
+    radial-gradient(
+      1200px 600px at 10% -10%,
+      color-mix(in srgb, var(--at-accent) 8%, transparent),
+      transparent 55%
+    ),
+    radial-gradient(
+      900px 500px at 100% 0%,
+      color-mix(in srgb, #6b8cae 6%, transparent),
+      transparent 50%
+    ),
+    var(--at-bg);
+}
+
+.at-main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  min-height: 100dvh;
+}
+
+.at-content {
+  flex: 1;
+  padding: 1rem 1rem calc(var(--at-mobile-nav-h) + 1rem);
+  min-width: 0;
+}
+
+@media (min-width: 1024px) {
+  .at-content {
+    padding: 1.25rem 1.5rem 1.5rem;
+  }
+}
+
+.at-table-wrap {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.at-card {
+  background: color-mix(in srgb, var(--at-surface) 92%, transparent);
+  border: 1px solid var(--at-border);
+  border-radius: var(--at-radius);
+  box-shadow: var(--at-shadow);
+  backdrop-filter: blur(8px);
+}
+
+.at-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.875rem 1rem;
+  border-bottom: 1px solid var(--at-border);
+}
+
+.at-card-body {
+  padding: 1rem;
+}
+
+.at-label {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--at-text-secondary);
+}
+
+.at-mono {
+  font-family: var(--at-font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+.at-up {
+  color: var(--at-buy);
+}
+
+.at-down {
+  color: var(--at-sell);
+}
+
+.at-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  height: 2.25rem;
+  padding: 0 0.9rem;
+  border-radius: var(--at-radius-sm);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  transition:
+    background-color 160ms ease,
+    border-color 160ms ease,
+    opacity 160ms ease,
+    transform 120ms ease;
+}
+
+.at-btn:active:not(:disabled) {
+  transform: scale(0.985);
+}
+
+.at-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.at-btn-primary {
+  background: var(--at-accent);
+  color: #fff;
+}
+
+.at-btn-primary:hover:not(:disabled) {
+  background: var(--at-accent-hover);
+}
+
+.at-btn-ghost {
+  background: #fff;
+  border: 1px solid var(--at-border-strong);
+  color: var(--at-text);
+  font-weight: 700;
+}
+
+.at-btn-ghost:hover:not(:disabled) {
+  border-color: var(--at-accent);
+  color: var(--at-accent);
+  background: var(--at-accent-muted);
+}
+
+a.at-btn {
+  text-decoration: none;
+}
+
+.at-btn-buy {
+  background: var(--at-buy);
+  color: #fff;
+}
+
+.at-btn-sell {
+  background: var(--at-sell);
+  color: #fff;
+}
+
+.at-input {
+  width: 100%;
+  height: 2.25rem;
+  padding: 0 0.75rem;
+  border-radius: var(--at-radius-sm);
+  border: 1px solid var(--at-border);
+  background: var(--at-bg-elevated);
+  color: var(--at-text);
+  font-size: 0.8125rem;
+}
+
+.at-input:focus {
+  outline: none;
+  border-color: color-mix(in srgb, var(--at-accent) 55%, var(--at-border));
+  box-shadow: 0 0 0 3px var(--at-accent-muted);
+}
+
+.at-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  height: 1.35rem;
+  padding: 0 0.5rem;
+  border-radius: 999px;
+  font-size: 0.625rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  border: 1px solid var(--at-border);
+  color: var(--at-text-secondary);
+  background: var(--at-surface-2);
+}
+
+.at-badge-live {
+  border-color: color-mix(in srgb, var(--at-live) 40%, var(--at-border));
+  color: var(--at-live);
+  background: var(--at-sell-muted);
+}
+
+.at-badge-demo {
+  border-color: color-mix(in srgb, var(--at-demo) 40%, var(--at-border));
+  color: var(--at-demo);
+  background: color-mix(in srgb, var(--at-demo) 14%, transparent);
+}
+
+.at-skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--at-surface-2) 0%,
+    var(--at-surface-3) 50%,
+    var(--at-surface-2) 100%
+  );
+  background-size: 200% 100%;
+  animation: at-shimmer 1.4s ease-in-out infinite;
+  border-radius: var(--at-radius-sm);
+}
+
+@keyframes at-shimmer {
+  0% {
+    background-position: 100% 0;
+  }
+  100% {
+    background-position: -100% 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .at-skeleton {
+    animation: none;
+  }
+
+  .at-btn:active:not(:disabled) {
+    transform: none;
+  }
+}

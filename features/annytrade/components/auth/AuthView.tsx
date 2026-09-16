@@ -1,0 +1,360 @@
+"use client";
+
+import Link from "next/link";
+import { useState, type FormEvent } from "react";
+import { useRouter } from "next/navigation";
+
+import { AnnyTradeLogo } from "../brand/AnnyTradeLogo";
+import { useAnnyTrade } from "../../context/AnnyTradeContext";
+import { annytradeRoutes } from "../../lib/routes";
+import { annytradeFetch } from "../../services/client";
+
+type AuthVariant =
+  "login" | "register" | "forgot" | "reset" | "verify" | "onboarding";
+
+const COPY: Record<
+  AuthVariant,
+  { title: string; subtitle: string; cta: string; next?: string }
+> = {
+  login: {
+    title: "Welcome back",
+    subtitle: "Sign in to your AnnyTrade paper account.",
+    cta: "Sign in",
+    next: annytradeRoutes.dashboard,
+  },
+  register: {
+    title: "Create account",
+    subtitle:
+      "Creates a real account with a PAPER trading ledger. Markets stay simulated.",
+    cta: "Create account",
+    next: annytradeRoutes.auth.onboarding,
+  },
+  forgot: {
+    title: "Forgot password",
+    subtitle:
+      "Request a password reset. Email delivery is foundation-only in Phase 1.",
+    cta: "Send reset link",
+    next: annytradeRoutes.auth.reset,
+  },
+  reset: {
+    title: "Reset password",
+    subtitle:
+      "Paste the reset token from your email (or local server log in development).",
+    cta: "Update password",
+    next: annytradeRoutes.auth.login,
+  },
+  verify: {
+    title: "Verify email",
+    subtitle:
+      "Paste the email verification token from development logs / email.",
+    cta: "Verify",
+    next: annytradeRoutes.auth.onboarding,
+  },
+  onboarding: {
+    title: "Set up your desk",
+    subtitle: "Saved to your profile. Market data remains simulated.",
+    cta: "Enter dashboard",
+    next: annytradeRoutes.dashboard,
+  },
+};
+
+export function AuthView({ variant }: { variant: AuthVariant }) {
+  const router = useRouter();
+  const { refreshAuth } = useAnnyTrade();
+  const copy = COPY[variant];
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [info, setInfo] = useState<string | null>(null);
+
+  async function onSubmit(e: FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    setBusy(true);
+    setError(null);
+    setInfo(null);
+    const form = new FormData(e.currentTarget);
+
+    try {
+      if (variant === "login") {
+        await annytradeFetch("/auth/login", {
+          method: "POST",
+          body: JSON.stringify({
+            email: String(form.get("email") ?? ""),
+            password: String(form.get("password") ?? ""),
+          }),
+        });
+        await refreshAuth();
+        router.push(copy.next ?? annytradeRoutes.dashboard);
+        return;
+      }
+
+      if (variant === "register") {
+        await annytradeFetch("/auth/register", {
+          method: "POST",
+          body: JSON.stringify({
+            email: String(form.get("email") ?? ""),
+            password: String(form.get("password") ?? ""),
+            displayName: String(form.get("displayName") ?? ""),
+          }),
+        });
+        await refreshAuth();
+        router.push(copy.next ?? annytradeRoutes.dashboard);
+        return;
+      }
+
+      if (variant === "forgot") {
+        await annytradeFetch("/auth/password-reset", {
+          method: "POST",
+          body: JSON.stringify({ email: String(form.get("email") ?? "") }),
+        });
+        setInfo("If that email exists, a reset token was issued.");
+        return;
+      }
+
+      if (variant === "reset") {
+        await annytradeFetch("/auth/password-reset", {
+          method: "POST",
+          body: JSON.stringify({
+            token: String(form.get("token") ?? ""),
+            password: String(form.get("password") ?? ""),
+          }),
+        });
+        setInfo("Password updated. You can sign in.");
+        router.push(annytradeRoutes.auth.login);
+        return;
+      }
+
+      if (variant === "verify") {
+        await annytradeFetch("/auth/verify-email", {
+          method: "POST",
+          body: JSON.stringify({ token: String(form.get("token") ?? "") }),
+        });
+        await refreshAuth();
+        router.push(copy.next ?? annytradeRoutes.dashboard);
+        return;
+      }
+
+      if (variant === "onboarding") {
+        await annytradeFetch("/profile", {
+          method: "PATCH",
+          body: JSON.stringify({
+            defaultMarket: String(form.get("defaultMarket") ?? "forex"),
+            preferredCurrency: String(form.get("preferredCurrency") ?? "USD"),
+          }),
+        });
+        await refreshAuth();
+        router.push(copy.next ?? annytradeRoutes.dashboard);
+      }
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message : "Request failed. Try again.";
+      setError(message);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <div
+      data-annytrade
+      data-at-theme="dark"
+      className="flex min-h-dvh items-center justify-center px-4 py-10"
+      style={{
+        background:
+          "radial-gradient(900px 500px at 20% 0%, color-mix(in srgb, var(--at-accent) 12%, transparent), transparent), var(--at-bg)",
+      }}
+    >
+      <div className="at-card w-full max-w-md">
+        <div className="at-card-body space-y-5">
+          <AnnyTradeLogo />
+          <div>
+            <h1
+              className="text-xl font-semibold"
+              style={{ fontFamily: "var(--at-font-display)" }}
+            >
+              {copy.title}
+            </h1>
+            <p className="mt-1 text-[0.8125rem] font-bold text-[#020617]">
+              {copy.subtitle}
+            </p>
+          </div>
+
+          {error ? (
+            <p className="rounded-[8px] border border-[color-mix(in_srgb,var(--at-sell)_40%,var(--at-border))] bg-[var(--at-sell-muted)] px-3 py-2 text-[0.8125rem]">
+              {error}
+            </p>
+          ) : null}
+          {info ? (
+            <p className="rounded-[8px] border px-3 py-2 text-[0.8125rem] font-bold text-[#020617]">
+              {info}
+            </p>
+          ) : null}
+
+          <form className="space-y-3" onSubmit={onSubmit}>
+            {variant === "login" || variant === "register" ? (
+              <>
+                {variant === "register" ? (
+                  <label className="block space-y-1.5">
+                    <span className="text-[0.75rem] font-bold text-[#020617]">
+                      Full name
+                    </span>
+                    <input
+                      className="at-input"
+                      id="at-auth-display-name"
+                      name="displayName"
+                      placeholder="Full name"
+                      autoComplete="name"
+                      required
+                      minLength={2}
+                    />
+                  </label>
+                ) : null}
+                <label className="block space-y-1.5">
+                  <span className="text-[0.75rem] font-bold text-[#020617]">
+                    Email
+                  </span>
+                  <input
+                    className="at-input"
+                    id="at-auth-email"
+                    name="email"
+                    type="email"
+                    placeholder="Email"
+                    autoComplete="email"
+                    required
+                  />
+                </label>
+                <label className="block space-y-1.5">
+                  <span className="text-[0.75rem] font-bold text-[#020617]">
+                    Password
+                  </span>
+                  <input
+                    className="at-input"
+                    id="at-auth-password"
+                    name="password"
+                    type="password"
+                    placeholder="Password"
+                    autoComplete={
+                      variant === "register"
+                        ? "new-password"
+                        : "current-password"
+                    }
+                    required
+                    minLength={variant === "register" ? 10 : 1}
+                  />
+                </label>
+              </>
+            ) : null}
+            {variant === "forgot" ? (
+              <label className="block space-y-1.5">
+                <span className="text-[0.75rem] font-bold text-[#020617]">
+                  Email
+                </span>
+                <input
+                  className="at-input"
+                  id="at-auth-forgot-email"
+                  name="email"
+                  type="email"
+                  placeholder="Email"
+                  autoComplete="email"
+                  required
+                />
+              </label>
+            ) : null}
+            {variant === "reset" ? (
+              <>
+                <label className="block space-y-1.5">
+                  <span className="text-[0.75rem] font-bold text-[#020617]">
+                    Reset token
+                  </span>
+                  <input
+                    className="at-input"
+                    id="at-auth-reset-token"
+                    name="token"
+                    placeholder="Reset token"
+                    required
+                  />
+                </label>
+                <label className="block space-y-1.5">
+                  <span className="text-[0.75rem] font-bold text-[#020617]">
+                    New password
+                  </span>
+                  <input
+                    className="at-input"
+                    id="at-auth-reset-password"
+                    name="password"
+                    type="password"
+                    placeholder="New password"
+                    autoComplete="new-password"
+                    required
+                    minLength={10}
+                  />
+                </label>
+              </>
+            ) : null}
+            {variant === "verify" ? (
+              <label className="block space-y-1.5">
+                <span className="text-[0.75rem] font-bold text-[#020617]">
+                  Verification token
+                </span>
+                <input
+                  className="at-input"
+                  id="at-auth-verify-token"
+                  name="token"
+                  placeholder="Verification token"
+                  required
+                />
+              </label>
+            ) : null}
+            {variant === "onboarding" ? (
+              <>
+                <select
+                  className="at-input"
+                  name="defaultMarket"
+                  defaultValue="forex"
+                  required
+                >
+                  <option value="forex">Preferred market , Forex</option>
+                  <option value="indices">Preferred market , Indices</option>
+                  <option value="commodities">
+                    Preferred market , Commodities
+                  </option>
+                  <option value="crypto">Preferred market , Crypto</option>
+                </select>
+                <select
+                  className="at-input"
+                  name="preferredCurrency"
+                  defaultValue="USD"
+                  required
+                >
+                  <option value="USD">Account currency , USD</option>
+                  <option value="EUR">Account currency , EUR</option>
+                  <option value="GBP">Account currency , GBP</option>
+                </select>
+              </>
+            ) : null}
+
+            <button
+              type="submit"
+              className="at-btn at-btn-primary w-full"
+              disabled={busy}
+            >
+              {busy ? "Working…" : copy.cta}
+            </button>
+          </form>
+
+          <div className="flex flex-wrap gap-3 text-[0.75rem] font-bold text-[#020617]">
+            {variant === "login" ? (
+              <>
+                <Link href={annytradeRoutes.auth.register}>Create account</Link>
+                <Link href={annytradeRoutes.auth.forgot}>Forgot password</Link>
+              </>
+            ) : (
+              <Link href={annytradeRoutes.auth.login}>Back to sign in</Link>
+            )}
+            <Link href={annytradeRoutes.dashboard}>Continue as guest demo</Link>
+            <Link href="/work/annytrade">â† Portfolio case study</Link>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}

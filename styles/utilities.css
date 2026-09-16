@@ -1,0 +1,260 @@
+/*
+ * Layout utilities — compositional helpers, not UI components.
+ * Prefer these for page structure; leave presentation to features later.
+ */
+
+@layer utilities {
+  /* ---------------------------------------------------------------------- */
+  /* Container                                                              */
+  /* ---------------------------------------------------------------------- */
+  .u-container {
+    width: 100%;
+    max-width: var(--container-desktop);
+    margin-inline: auto;
+    padding-inline: var(--container-padding);
+  }
+
+  .u-container-narrow {
+    width: 100%;
+    max-width: var(--container-laptop);
+    margin-inline: auto;
+    padding-inline: var(--container-padding);
+  }
+
+  .u-container-wide {
+    width: 100%;
+    max-width: var(--container-ultrawide);
+    margin-inline: auto;
+    padding-inline: var(--container-padding);
+  }
+
+  .u-container-prose {
+    width: 100%;
+    max-width: var(--container-tablet);
+    margin-inline: auto;
+    padding-inline: var(--container-padding);
+  }
+
+  @media (min-width: 768px) {
+    .u-container,
+    .u-container-narrow,
+    .u-container-wide,
+    .u-container-prose {
+      padding-inline: var(--container-padding-md);
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .u-container,
+    .u-container-narrow,
+    .u-container-wide,
+    .u-container-prose {
+      padding-inline: var(--container-padding-lg);
+    }
+  }
+
+  /* ---------------------------------------------------------------------- */
+  /* Section / Screen                                                       */
+  /* ---------------------------------------------------------------------- */
+  .u-section {
+    width: 100%;
+    padding-block: var(--space-64);
+  }
+
+  .u-section-sm {
+    width: 100%;
+    padding-block: var(--space-48);
+  }
+
+  .u-section-lg {
+    width: 100%;
+    padding-block: var(--space-96);
+  }
+
+  .u-screen {
+    min-height: 100dvh;
+    width: 100%;
+  }
+
+  .u-screen-center {
+    min-height: 100dvh;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* ---------------------------------------------------------------------- */
+  /* Spacing                                                                */
+  /* ---------------------------------------------------------------------- */
+  .u-stack-4 {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+  }
+
+  .u-stack-8 {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-8);
+  }
+
+  .u-stack-16 {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-16);
+  }
+
+  .u-stack-24 {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-24);
+  }
+
+  .u-stack-32 {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-32);
+  }
+
+  .u-stack-48 {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-48);
+  }
+
+  .u-inline-8 {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: var(--space-8);
+  }
+
+  .u-inline-16 {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: var(--space-16);
+  }
+
+  .u-inline-24 {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: var(--space-24);
+  }
+
+  /* ---------------------------------------------------------------------- */
+  /* Centering                                                              */
+  /* ---------------------------------------------------------------------- */
+  .u-center {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .u-center-x {
+    display: flex;
+    justify-content: center;
+  }
+
+  .u-center-y {
+    display: flex;
+    align-items: center;
+  }
+
+  .u-mx-auto {
+    margin-inline: auto;
+  }
+
+  /* ---------------------------------------------------------------------- */
+  /* Overflow                                                               */
+  /* ---------------------------------------------------------------------- */
+  .u-overflow-hidden {
+    overflow: hidden;
+  }
+
+  .u-overflow-auto {
+    overflow: auto;
+  }
+
+  .u-overflow-x-auto {
+    overflow-x: auto;
+  }
+
+  .u-overflow-y-auto {
+    overflow-y: auto;
+  }
+
+  .u-truncate {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  /* ---------------------------------------------------------------------- */
+  /* Type roles                                                             */
+  /* ---------------------------------------------------------------------- */
+  .u-text-display {
+    font-family: var(--font-display);
+    font-size: var(--text-display);
+    font-weight: var(--weight-semibold);
+    line-height: var(--leading-display);
+    letter-spacing: var(--tracking-display);
+    color: var(--color-text-primary);
+  }
+
+  .u-text-heading {
+    font-family: var(--font-heading);
+    font-size: var(--text-heading);
+    font-weight: var(--weight-semibold);
+    line-height: var(--leading-heading);
+    letter-spacing: var(--tracking-heading);
+    color: var(--color-text-primary);
+  }
+
+  .u-text-title {
+    font-family: var(--font-title);
+    font-size: var(--text-title);
+    font-weight: var(--weight-medium);
+    line-height: var(--leading-title);
+    letter-spacing: var(--tracking-title);
+    color: var(--color-text-primary);
+  }
+
+  .u-text-body {
+    font-family: var(--font-body);
+    font-size: var(--text-body);
+    font-weight: var(--weight-regular);
+    line-height: var(--leading-body);
+    letter-spacing: var(--tracking-body);
+    color: var(--color-text-secondary);
+  }
+
+  .u-text-label {
+    font-family: var(--font-label);
+    font-size: var(--text-label);
+    font-weight: var(--weight-medium);
+    line-height: var(--leading-label);
+    letter-spacing: var(--tracking-label);
+    color: var(--color-text-primary);
+  }
+
+  .u-text-caption {
+    font-family: var(--font-caption);
+    font-size: var(--text-caption);
+    font-weight: var(--weight-regular);
+    line-height: var(--leading-caption);
+    letter-spacing: var(--tracking-caption);
+    color: var(--color-text-tertiary);
+  }
+
+  .u-text-mono {
+    font-family: var(--font-mono);
+    font-size: var(--text-mono);
+    font-weight: var(--weight-regular);
+    line-height: var(--leading-mono);
+    letter-spacing: var(--tracking-mono);
+  }
+}
