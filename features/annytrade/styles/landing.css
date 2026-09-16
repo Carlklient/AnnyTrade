@@ -3,9 +3,9 @@
   --atl-bg: #ffffff;
   --atl-bg-soft: #f2f4f8;
   --atl-bg-card: #f0f2f6;
-  --atl-text: #111827;
-  --atl-text-secondary: #5b6475;
-  --atl-text-muted: #8a93a5;
+  --atl-text: #020617;
+  --atl-text-secondary: #0f172a;
+  --atl-text-muted: #1e293b;
   --atl-primary: #2455f4;
   --atl-primary-hover: #1a45d6;
   --atl-sell: #ff6b2c;
@@ -20,6 +20,7 @@
   background: var(--atl-bg);
   color: var(--atl-text);
   font-family: var(--atl-font-sans);
+  font-weight: 600;
 }
 
 [data-at-landing] * {

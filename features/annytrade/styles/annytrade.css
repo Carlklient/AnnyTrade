@@ -8,9 +8,9 @@
   --at-border: #2c3340;
   --at-border-strong: #3a4354;
   --at-border-metal: color-mix(in srgb, #8a93a3 35%, transparent);
-  --at-text: #f2efe9;
-  --at-text-secondary: #a8b0bd;
-  --at-text-muted: #7a8494;
+  --at-text: #ffffff;
+  --at-text-secondary: #f1f5f9;
+  --at-text-muted: #e2e8f0;
   --at-accent: #c94b3a;
   --at-accent-hover: #d85a48;
   --at-accent-muted: color-mix(in srgb, #c94b3a 18%, transparent);

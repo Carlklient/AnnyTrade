@@ -1,0 +1,34 @@
+# Sync production DB URL onto Vercel projects (requires VERCEL_TOKEN secret).
+name: Sync Vercel DB env
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - ".github/workflows/sync-vercel-db-env.yml"
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    if: ${{ secrets.VERCEL_TOKEN != '' && secrets.ANNYTRADE_DATABASE_URL != '' }}
+    steps:
+      - name: Upsert ANNYTRADE_DATABASE_URL on Vercel projects
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          ANNYTRADE_DATABASE_URL: ${{ secrets.ANNYTRADE_DATABASE_URL }}
+          TEAM_ID: team_citMKKYSklDsJAwFgp6yrBRj
+        run: |
+          set -euo pipefail
+          for PROJECT in anny-trade-1 annytrade annytrade-app anny-trade annytrade-live annytrade-desk anny-trade-ffpq; do
+            echo "Updating $PROJECT…"
+            curl -sS -X POST \
+              "https://api.vercel.com/v10/projects/${PROJECT}/env?upsert=true&teamId=${TEAM_ID}" \
+              -H "Authorization: Bearer ${VERCEL_TOKEN}" \
+              -H "Content-Type: application/json" \
+              -d "[
+                {\"key\":\"ANNYTRADE_DATABASE_URL\",\"value\":$(jq -cn --arg v \"$ANNYTRADE_DATABASE_URL\" '$v'),\"type\":\"encrypted\",\"target\":[\"production\",\"preview\",\"development\"]},
+                {\"key\":\"DATABASE_URL\",\"value\":$(jq -cn --arg v \"$ANNYTRADE_DATABASE_URL\" '$v'),\"type\":\"encrypted\",\"target\":[\"production\",\"preview\",\"development\"]},
+                {\"key\":\"NEXT_PUBLIC_APP_URL\",\"value\":\"https://${PROJECT}.vercel.app\",\"type\":\"plain\",\"target\":[\"production\",\"preview\",\"development\"]},
+                {\"key\":\"ANNYTRADE_STANDALONE\",\"value\":\"1\",\"type\":\"plain\",\"target\":[\"production\",\"preview\",\"development\"]}
+              ]" | jq -c '{created:(.created|length? // 0), failed:(.failed|length? // 0)}' || true
+          done
