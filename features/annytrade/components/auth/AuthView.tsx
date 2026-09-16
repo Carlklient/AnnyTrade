@@ -58,6 +58,11 @@ const COPY: Record<
   },
 };
 
+const LABEL = {
+  color: "#020617",
+  WebkitTextFillColor: "#020617",
+} as const;
+
 export function AuthView({ variant }: { variant: AuthVariant }) {
   const router = useRouter();
   const { refreshAuth } = useAnnyTrade();
@@ -156,35 +161,43 @@ export function AuthView({ variant }: { variant: AuthVariant }) {
   return (
     <div
       data-annytrade
-      data-at-theme="dark"
+      data-at-theme="light"
       className="flex min-h-dvh items-center justify-center px-4 py-10"
       style={{
         background:
-          "radial-gradient(900px 500px at 20% 0%, color-mix(in srgb, var(--at-accent) 12%, transparent), transparent), var(--at-bg)",
+          "radial-gradient(900px 500px at 20% 0%, color-mix(in srgb, var(--at-accent) 10%, transparent), transparent), #f3f5f8",
+        color: "#020617",
       }}
     >
-      <div className="at-card w-full max-w-md">
+      <div className="at-card w-full max-w-md shadow-sm">
         <div className="at-card-body space-y-5">
           <AnnyTradeLogo />
           <div>
             <h1
-              className="text-xl font-semibold"
-              style={{ fontFamily: "var(--at-font-display)" }}
+              className="text-xl font-extrabold"
+              style={{
+                fontFamily: "var(--at-font-display)",
+                color: "#020617",
+                WebkitTextFillColor: "#020617",
+              }}
             >
               {copy.title}
             </h1>
-            <p className="mt-1 text-[0.8125rem] font-bold text-[#020617]">
+            <p
+              className="mt-1 text-[0.875rem] font-semibold"
+              style={{ color: "#0f172a", WebkitTextFillColor: "#0f172a" }}
+            >
               {copy.subtitle}
             </p>
           </div>
 
           {error ? (
-            <p className="rounded-[8px] border border-[color-mix(in_srgb,var(--at-sell)_40%,var(--at-border))] bg-[var(--at-sell-muted)] px-3 py-2 text-[0.8125rem]">
+            <p className="rounded-[8px] border border-[color-mix(in_srgb,var(--at-sell)_40%,var(--at-border))] bg-[var(--at-sell-muted)] px-3 py-2 text-[0.8125rem] font-semibold text-[#7f1d1d]">
               {error}
             </p>
           ) : null}
           {info ? (
-            <p className="rounded-[8px] border px-3 py-2 text-[0.8125rem] font-bold text-[#020617]">
+            <p className="rounded-[8px] border px-3 py-2 text-[0.8125rem] font-semibold text-[#020617]">
               {info}
             </p>
           ) : null}
@@ -194,7 +207,7 @@ export function AuthView({ variant }: { variant: AuthVariant }) {
               <>
                 {variant === "register" ? (
                   <label className="block space-y-1.5">
-                    <span className="text-[0.75rem] font-bold text-[#020617]">
+                    <span className="text-[0.8rem] font-bold" style={LABEL}>
                       Full name
                     </span>
                     <input
@@ -209,7 +222,7 @@ export function AuthView({ variant }: { variant: AuthVariant }) {
                   </label>
                 ) : null}
                 <label className="block space-y-1.5">
-                  <span className="text-[0.75rem] font-bold text-[#020617]">
+                  <span className="text-[0.8rem] font-bold" style={LABEL}>
                     Email
                   </span>
                   <input
@@ -223,7 +236,7 @@ export function AuthView({ variant }: { variant: AuthVariant }) {
                   />
                 </label>
                 <label className="block space-y-1.5">
-                  <span className="text-[0.75rem] font-bold text-[#020617]">
+                  <span className="text-[0.8rem] font-bold" style={LABEL}>
                     Password
                   </span>
                   <input
@@ -245,7 +258,7 @@ export function AuthView({ variant }: { variant: AuthVariant }) {
             ) : null}
             {variant === "forgot" ? (
               <label className="block space-y-1.5">
-                <span className="text-[0.75rem] font-bold text-[#020617]">
+                <span className="text-[0.8rem] font-bold" style={LABEL}>
                   Email
                 </span>
                 <input
@@ -262,7 +275,7 @@ export function AuthView({ variant }: { variant: AuthVariant }) {
             {variant === "reset" ? (
               <>
                 <label className="block space-y-1.5">
-                  <span className="text-[0.75rem] font-bold text-[#020617]">
+                  <span className="text-[0.8rem] font-bold" style={LABEL}>
                     Reset token
                   </span>
                   <input
@@ -274,7 +287,7 @@ export function AuthView({ variant }: { variant: AuthVariant }) {
                   />
                 </label>
                 <label className="block space-y-1.5">
-                  <span className="text-[0.75rem] font-bold text-[#020617]">
+                  <span className="text-[0.8rem] font-bold" style={LABEL}>
                     New password
                   </span>
                   <input
@@ -292,7 +305,7 @@ export function AuthView({ variant }: { variant: AuthVariant }) {
             ) : null}
             {variant === "verify" ? (
               <label className="block space-y-1.5">
-                <span className="text-[0.75rem] font-bold text-[#020617]">
+                <span className="text-[0.8rem] font-bold" style={LABEL}>
                   Verification token
                 </span>
                 <input
@@ -341,7 +354,7 @@ export function AuthView({ variant }: { variant: AuthVariant }) {
             </button>
           </form>
 
-          <div className="flex flex-wrap gap-3 text-[0.75rem] font-bold text-[#020617]">
+          <div className="flex flex-wrap gap-3 text-[0.8rem] font-bold" style={LABEL}>
             {variant === "login" ? (
               <>
                 <Link href={annytradeRoutes.auth.register}>Create account</Link>
@@ -351,7 +364,7 @@ export function AuthView({ variant }: { variant: AuthVariant }) {
               <Link href={annytradeRoutes.auth.login}>Back to sign in</Link>
             )}
             <Link href={annytradeRoutes.dashboard}>Continue as guest demo</Link>
-            <Link href="/work/annytrade">â† Portfolio case study</Link>
+            <Link href="/work/annytrade">← Portfolio case study</Link>
           </div>
         </div>
       </div>

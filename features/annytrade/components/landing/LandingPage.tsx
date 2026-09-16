@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import { annytradeRoutes } from "../../lib/routes";
+import { LandingNav } from "./LandingNav";
 import { TradeDeviceMock } from "./TradeDeviceMock";
 import "../../styles/landing.css";
 
@@ -94,29 +95,6 @@ const MILESTONES = [
   { year: "Phase 10", label: "Ops & admin readiness" },
 ] as const;
 
-function BrandMark() {
-  return (
-    <span className="atl-brand-mark" aria-hidden>
-      <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
-        <path
-          d="M2.5 11.5L6 6.5L9 9.5L13.5 3.5"
-          stroke="currentColor"
-          strokeWidth="1.75"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-        <path
-          d="M10.5 3.5H13.5V6.5"
-          stroke="currentColor"
-          strokeWidth="1.75"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-      </svg>
-    </span>
-  );
-}
-
 const INK = { color: "#000000", WebkitTextFillColor: "#000000", opacity: 1 } as const;
 
 export function LandingPage() {
@@ -152,33 +130,7 @@ export function LandingPage() {
         }
       `}</style>
       <div className="atl-wrap">
-        <header className="atl-nav">
-          <Link
-            href={annytradeRoutes.root}
-            className="atl-brand"
-            aria-label="AnnyTrade home"
-          >
-            <BrandMark />
-            <span className="atl-brand-name">annytrade</span>
-          </Link>
-          <div className="atl-nav-actions">
-            <Link
-              href={annytradeRoutes.auth.login}
-              className="atl-btn atl-btn-ghost"
-            >
-              Log in
-            </Link>
-            <Link
-              href={annytradeRoutes.auth.register}
-              className="atl-btn atl-btn-primary"
-            >
-              Sign up
-            </Link>
-            <button type="button" className="atl-menu-btn" aria-label="Menu">
-              <span />
-            </button>
-          </div>
-        </header>
+        <LandingNav />
       </div>
 
       <section className="atl-hero">
