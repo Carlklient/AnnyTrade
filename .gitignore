@@ -42,3 +42,8 @@ next-env.d.ts
 
 # vercel
 .vercel
+
+.db-*.tmp
+.db-role.sql
+scripts/_tmp-*.mjs
+
