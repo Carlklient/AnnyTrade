@@ -1,0 +1,44 @@
+# Wake Render free-tier AnnyTrade so the paper desk stays responsive.
+name: AnnyTrade keep-alive
+
+on:
+  schedule:
+    # Render free instances sleep after ~15m idle; ping under that window.
+    - cron: "*/12 * * * *"
+  workflow_dispatch:
+
+jobs:
+  heartbeat:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Ping health + optional cron tick
+        env:
+          APP_URL: ${{ vars.ANNYTRADE_APP_URL }}
+          CRON_SECRET: ${{ secrets.ANNYTRADE_CRON_SECRET }}
+        run: |
+          set -euo pipefail
+          BASE="${APP_URL:-https://annytrade.onrender.com}"
+          BASE="${BASE%/}"
+          echo "GET ${BASE}/api/annytrade/health"
+          CODE=$(curl -sS -o /tmp/at-health.json -w "%{http_code}" \
+            -H "User-Agent: github-actions-annytrade-keepalive" \
+            "${BASE}/api/annytrade/health" || echo "000")
+          echo "health HTTP ${CODE}"
+          cat /tmp/at-health.json || true
+          echo
+          if [[ "${CODE}" != "200" && "${CODE}" != "503" ]]; then
+            echo "Unexpected health status ${CODE}" >&2
+            exit 1
+          fi
+          # Soft-fail cron: only when secret is configured (paper order/alert ticks).
+          if [[ -n "${CRON_SECRET:-}" ]]; then
+            echo "GET ${BASE}/api/annytrade/jobs/cron"
+            curl -sS -o /tmp/at-cron.json -w "cron HTTP %{http_code}\n" \
+              -H "Authorization: Bearer ${CRON_SECRET}" \
+              -H "User-Agent: github-actions-annytrade-keepalive" \
+              "${BASE}/api/annytrade/jobs/cron" || true
+            cat /tmp/at-cron.json || true
+          else
+            echo "ANNYTRADE_CRON_SECRET unset — skipping jobs/cron (health wake only)"
+          fi

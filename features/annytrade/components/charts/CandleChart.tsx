@@ -33,6 +33,15 @@ type CandleChartProps = {
   flags?: ChartIndicatorFlags;
   /** Used to persist drawings per symbol */
   symbol?: string;
+  /** Append a drawing from Space / parent (consumed once). */
+  injectDrawing?: ChartDrawing | null;
+  onInjectConsumed?: () => void;
+  /** Enable click-to-trade mode (paper). */
+  tradeFromChart?: boolean;
+  /** When true, chart click immediately fires onChartTrade without a second confirm. */
+  oneClick?: boolean;
+  onChartTrade?: (side: "BUY" | "SELL", price: number) => void;
+  tradeDisabled?: boolean;
 };
 
 const DEFAULT_FLAGS: ChartIndicatorFlags = {
@@ -57,6 +66,12 @@ export function CandleChart({
   indicators,
   flags = DEFAULT_FLAGS,
   symbol,
+  injectDrawing,
+  onInjectConsumed,
+  tradeFromChart = false,
+  oneClick = false,
+  onChartTrade,
+  tradeDisabled = false,
 }: CandleChartProps) {
   const [hoverIdx, setHoverIdx] = useState<number | null>(null);
   const [viewStart, setViewStart] = useState(0);
@@ -67,6 +82,10 @@ export function CandleChart({
     x0: number;
     price0: number;
   } | null>(null);
+  const [tradeArmed, setTradeArmed] = useState(false);
+  const [pendingTradePrice, setPendingTradePrice] = useState<number | null>(
+    null,
+  );
 
   useEffect(() => {
     if (!symbol) {
@@ -76,12 +95,30 @@ export function CandleChart({
     setDrawings(loadChartDrawings(symbol));
     setTrendDraft(null);
     setDrawTool("none");
+    setPendingTradePrice(null);
+    setTradeArmed(false);
   }, [symbol]);
 
   useEffect(() => {
     if (!symbol) return;
     saveChartDrawings(symbol, drawings);
   }, [symbol, drawings]);
+
+  useEffect(() => {
+    if (!injectDrawing) return;
+    setDrawings((prev) => {
+      if (prev.some((d) => d.id === injectDrawing.id)) return prev;
+      return [...prev, injectDrawing].slice(0, 40);
+    });
+    onInjectConsumed?.();
+  }, [injectDrawing, onInjectConsumed]);
+
+  useEffect(() => {
+    if (!tradeFromChart) {
+      setTradeArmed(false);
+      setPendingTradePrice(null);
+    }
+  }, [tradeFromChart]);
 
   const maxWindow = Math.min(candles.length, 180);
   const windowSize = Math.min(maxWindow, Math.max(40, candles.length));
@@ -229,7 +266,6 @@ export function CandleChart({
   let cursorY = volTop + (showVol ? 56 : 0);
 
   function handleChartClick(e: MouseEvent<SVGSVGElement>) {
-    if (drawTool === "none") return;
     const rect = e.currentTarget.getBoundingClientRect();
     const px = ((e.clientX - rect.left) / rect.width) * width;
     const py = ((e.clientY - rect.top) / rect.height) * height;
@@ -237,6 +273,22 @@ export function CandleChart({
     const localIdx = indexFromX(px);
     const globalIdx = idxOffset + localIdx;
     const price = Number(priceFromY(py).toFixed(6));
+
+    if (tradeArmed && onChartTrade && !tradeDisabled) {
+      if (oneClick) {
+        onChartTrade("BUY", price);
+        setPendingTradePrice(null);
+        return;
+      }
+      setPendingTradePrice(price);
+      setDrawings((prev) => [
+        ...prev.filter((d) => !d.id.startsWith("trade_preview_")),
+        { id: `trade_preview_${price}`, type: "hline", price },
+      ]);
+      return;
+    }
+
+    if (drawTool === "none") return;
 
     if (drawTool === "hline") {
       setDrawings((prev) => [
@@ -285,6 +337,8 @@ export function CandleChart({
           }
           onClick={() => {
             setTrendDraft(null);
+            setTradeArmed(false);
+            setPendingTradePrice(null);
             setDrawTool((t) => (t === "hline" ? "none" : "hline"));
           }}
         >
@@ -300,11 +354,36 @@ export function CandleChart({
           }
           onClick={() => {
             setTrendDraft(null);
+            setTradeArmed(false);
+            setPendingTradePrice(null);
             setDrawTool((t) => (t === "trend" ? "none" : "trend"));
           }}
         >
           Trend
         </button>
+        {tradeFromChart ? (
+          <button
+            type="button"
+            className="at-btn at-btn-ghost h-7 px-2 text-[0.65rem]"
+            disabled={tradeDisabled}
+            style={
+              tradeArmed
+                ? {
+                    background: "var(--at-accent-muted)",
+                    color: "var(--at-accent)",
+                  }
+                : undefined
+            }
+            onClick={() => {
+              setDrawTool("none");
+              setTrendDraft(null);
+              setPendingTradePrice(null);
+              setTradeArmed((v) => !v);
+            }}
+          >
+            Trade
+          </button>
+        ) : null}
         <button
           type="button"
           className="at-btn at-btn-ghost h-7 px-2 text-[0.65rem]"
@@ -312,6 +391,7 @@ export function CandleChart({
             setDrawings([]);
             setTrendDraft(null);
             setDrawTool("none");
+            setPendingTradePrice(null);
           }}
           disabled={drawings.length === 0}
         >
@@ -326,7 +406,57 @@ export function CandleChart({
                 : "Click first point"}
           </span>
         ) : null}
+        {tradeArmed ? (
+          <span className="text-[0.65rem] font-semibold text-[#0f172a]">
+            {oneClick
+              ? "Click chart → PAPER buy at level"
+              : "Click chart → pick buy/sell at level"}
+          </span>
+        ) : null}
       </div>
+
+      {pendingTradePrice != null && onChartTrade ? (
+        <div
+          className="mb-2 flex flex-wrap items-center gap-2 rounded-[8px] border px-2.5 py-2"
+          style={{
+            borderColor: "var(--at-border-strong)",
+            background: "var(--at-surface-2)",
+          }}
+        >
+          <span className="text-[0.7rem] font-semibold">
+            PAPER @ {formatPrice(pendingTradePrice)}
+          </span>
+          <button
+            type="button"
+            className="at-btn at-btn-buy h-7 px-2.5 text-[0.65rem]"
+            disabled={tradeDisabled}
+            onClick={() => {
+              onChartTrade("BUY", pendingTradePrice);
+              setPendingTradePrice(null);
+            }}
+          >
+            Buy limit
+          </button>
+          <button
+            type="button"
+            className="at-btn at-btn-sell h-7 px-2.5 text-[0.65rem]"
+            disabled={tradeDisabled}
+            onClick={() => {
+              onChartTrade("SELL", pendingTradePrice);
+              setPendingTradePrice(null);
+            }}
+          >
+            Sell limit
+          </button>
+          <button
+            type="button"
+            className="at-btn at-btn-ghost h-7 px-2 text-[0.65rem]"
+            onClick={() => setPendingTradePrice(null)}
+          >
+            Cancel
+          </button>
+        </div>
+      ) : null}
 
       {hover ? (
         <div
@@ -365,7 +495,10 @@ export function CandleChart({
         className="h-[320px] w-full touch-pan-y sm:h-[380px] lg:h-[420px]"
         role="img"
         aria-label={`Candlestick chart with ${paneCount} panes. Use scroll to pan.`}
-        style={{ cursor: drawTool === "none" ? undefined : "crosshair" }}
+        style={{
+          cursor:
+            drawTool !== "none" || tradeArmed ? "crosshair" : undefined,
+        }}
         onWheel={onWheel}
         onClick={handleChartClick}
         onPointerDown={(e) => {

@@ -1,17 +1,33 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import { annytradeRoutes } from "../../lib/routes";
-import { formatCompactTime } from "../../lib/format";
+import { formatCompactTime, formatPrice } from "../../lib/format";
+import { spaceIdeasForSymbol, type SpaceIdea } from "../../lib/space-ideas";
 import { newsClient, type NewsArticleDto } from "../../services/news-client";
 
-type Tab = "feed" | "education" | "channels";
+type Tab = "feed" | "ideas" | "education";
 
-export function SpaceRail({ symbol }: { symbol: string }) {
-  const [tab, setTab] = useState<Tab>("feed");
+export type SpaceApplyPayload = {
+  idea: SpaceIdea;
+  /** If quote last is known, ideas without level can still open trade */
+  preferLevel?: number | null;
+};
+
+export function SpaceRail({
+  symbol,
+  lastPrice,
+  onApplyIdea,
+}: {
+  symbol: string;
+  lastPrice?: number | null;
+  onApplyIdea?: (payload: SpaceApplyPayload) => void;
+}) {
+  const [tab, setTab] = useState<Tab>("ideas");
   const [articles, setArticles] = useState<NewsArticleDto[]>([]);
+  const ideas = useMemo(() => spaceIdeasForSymbol(symbol), [symbol]);
 
   useEffect(() => {
     void newsClient
@@ -20,6 +36,15 @@ export function SpaceRail({ symbol }: { symbol: string }) {
       .catch(() => setArticles([]));
   }, [symbol]);
 
+  function apply(idea: SpaceIdea) {
+    const level =
+      idea.level ??
+      (lastPrice != null && Number.isFinite(lastPrice)
+        ? Number((lastPrice * (idea.bias === "bearish" ? 1.004 : 0.996)).toFixed(6))
+        : null);
+    onApplyIdea?.({ idea, preferLevel: level });
+  }
+
   return (
     <aside className="at-term-rail at-term-space" aria-label="Space">
       <div className="at-term-rail-head">
@@ -27,9 +52,9 @@ export function SpaceRail({ symbol }: { symbol: string }) {
         <div className="at-term-space-tabs" role="tablist">
           {(
             [
-              ["feed", "Feed"],
-              ["education", "Education"],
-              ["channels", "Channels"],
+              ["ideas", "Ideas"],
+              ["feed", "News"],
+              ["education", "Learn"],
             ] as const
           ).map(([id, label]) => (
             <button
@@ -47,6 +72,43 @@ export function SpaceRail({ symbol }: { symbol: string }) {
       </div>
 
       <div className="at-term-space-body">
+        {tab === "ideas" ? (
+          ideas.length === 0 ? (
+            <p className="at-term-inst-empty">No ideas for this symbol.</p>
+          ) : (
+            ideas
+              .filter((i) => i.kind !== "education")
+              .map((idea) => (
+                <article key={idea.id} className="at-term-post">
+                  <div className="at-term-post-meta">
+                    <span className="at-term-avatar">AT</span>
+                    <span className="font-semibold">Desk ideas</span>
+                    <span className="at-badge at-badge-demo">
+                      {idea.bias ?? idea.kind}
+                    </span>
+                  </div>
+                  <h3>{idea.title}</h3>
+                  <p>{idea.body}</p>
+                  <div className="mt-2 flex flex-wrap gap-2">
+                    <button
+                      type="button"
+                      className="at-btn at-btn-primary h-8 px-2.5 text-[0.7rem]"
+                      onClick={() => apply(idea)}
+                    >
+                      Apply to chart
+                    </button>
+                    <Link
+                      href={annytradeRoutes.trade(symbol)}
+                      className="at-btn at-btn-ghost h-8 px-2.5 text-[0.7rem]"
+                    >
+                      Focus {symbol}
+                    </Link>
+                  </div>
+                </article>
+              ))
+          )
+        ) : null}
+
         {tab === "feed" ? (
           articles.length === 0 ? (
             <p className="at-term-inst-empty">
@@ -81,25 +143,25 @@ export function SpaceRail({ symbol }: { symbol: string }) {
         ) : null}
 
         {tab === "education" ? (
-          <div className="at-term-post">
-            <h3>Paper trading basics</h3>
-            <p>
-              Practice entries with simulated cash. Live brokerage stays hard
-              blocked , marks and fills are for discipline, not real money.
-            </p>
-            <Link href={annytradeRoutes.signals}>Browse signals</Link>
-          </div>
-        ) : null}
-
-        {tab === "channels" ? (
-          <div className="at-term-post">
-            <h3>Channels</h3>
-            <p>
-              Community channels are not live yet. Use News and Signals for desk
-              context while you practice.
-            </p>
-            <Link href={annytradeRoutes.news}>News desk</Link>
-          </div>
+          <>
+            {ideas
+              .filter((i) => i.kind === "education")
+              .map((idea) => (
+                <div key={idea.id} className="at-term-post">
+                  <h3>{idea.title}</h3>
+                  <p>{idea.body}</p>
+                </div>
+              ))}
+            <div className="at-term-post">
+              <h3>Signals are educational</h3>
+              <p>
+                Rule-based biases are for practice — not financial advice. Pair
+                them with your own chart levels
+                {lastPrice != null ? ` (last ${formatPrice(lastPrice)})` : ""}.
+              </p>
+              <Link href={annytradeRoutes.signals}>Browse signals</Link>
+            </div>
+          </>
         ) : null}
       </div>
     </aside>

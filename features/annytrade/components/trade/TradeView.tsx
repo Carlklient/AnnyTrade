@@ -9,7 +9,7 @@ import { CandleChart } from "../charts/CandleChart";
 import { NewsView } from "../news/NewsView";
 import { SymbolAlertsPanel } from "../alerts/SymbolAlertsPanel";
 import { InstrumentsRail } from "./InstrumentsRail";
-import { SpaceRail } from "./SpaceRail";
+import { SpaceRail, type SpaceApplyPayload } from "./SpaceRail";
 import { annytradeApi } from "../../services/api";
 import { annytradeRoutes } from "../../lib/routes";
 import {
@@ -27,6 +27,10 @@ import {
   saveChartPrefs,
   type ChartIndicatorFlags,
 } from "../../lib/chart-prefs";
+import {
+  newDrawingId,
+  type ChartDrawing,
+} from "../../lib/chart-drawings";
 import { useAnnyTrade } from "../../context/AnnyTradeContext";
 import { useInstrument } from "../../hooks/useInstrument";
 import { useQuote } from "../../hooks/useQuotes";
@@ -107,6 +111,10 @@ export function TradeView({ symbol }: TradeViewProps) {
   const [stopPrice, setStopPrice] = useState(0);
   const [panel, setPanel] = useState<PanelTab>("positions");
   const [showIndicators, setShowIndicators] = useState(false);
+  const [oneClick, setOneClick] = useState(false);
+  const [injectDrawing, setInjectDrawing] = useState<ChartDrawing | null>(
+    null,
+  );
 
   useEffect(() => {
     const prefs = loadChartPrefs();
@@ -191,7 +199,15 @@ export function TradeView({ symbol }: TradeViewProps) {
           : (bid ?? last ?? 0);
   const estimatedValue = Number((estPrice * size).toFixed(2));
 
-  async function submit(nextSide: TicketSide) {
+  async function submit(
+    nextSide: TicketSide,
+    overrides?: {
+      orderType?: TicketType;
+      limitPrice?: number | null;
+      stopPrice?: number | null;
+      quantity?: number;
+    },
+  ) {
     setSide(nextSide);
     setMessage(null);
     setErrorMsg(null);
@@ -203,23 +219,40 @@ export function TradeView({ symbol }: TradeViewProps) {
       setErrorMsg("Symbol not in Phase 2 market catalog. Cannot paper trade.");
       return;
     }
-    if (size <= 0) {
+    const qty = overrides?.quantity ?? size;
+    if (qty <= 0) {
       setErrorMsg("Quantity must be positive.");
       return;
+    }
+    const nextType = overrides?.orderType ?? orderType;
+    const nextLimit =
+      overrides && "limitPrice" in overrides
+        ? overrides.limitPrice
+        : limitPrice;
+    const nextStop =
+      overrides && "stopPrice" in overrides ? overrides.stopPrice : stopPrice;
+    if (overrides?.orderType) setOrderType(overrides.orderType);
+    if (overrides && "limitPrice" in overrides && overrides.limitPrice != null) {
+      setLimitPrice(overrides.limitPrice);
+    }
+    if (overrides && "stopPrice" in overrides && overrides.stopPrice != null) {
+      setStopPrice(overrides.stopPrice);
     }
     setSubmitting(true);
     try {
       const result = await paperTradingClient.submitOrder({
         symbol: sym,
         side: nextSide,
-        orderType,
-        quantity: size,
+        orderType: nextType,
+        quantity: qty,
         limitPrice:
-          orderType === "LIMIT" || orderType === "STOP_LIMIT"
-            ? limitPrice
+          nextType === "LIMIT" || nextType === "STOP_LIMIT"
+            ? (nextLimit ?? null)
             : null,
         stopPrice:
-          orderType === "STOP" || orderType === "STOP_LIMIT" ? stopPrice : null,
+          nextType === "STOP" || nextType === "STOP_LIMIT"
+            ? (nextStop ?? null)
+            : null,
         idempotencyKey: newIdempotencyKey(),
       });
       const o = result.order;
@@ -236,6 +269,33 @@ export function TradeView({ symbol }: TradeViewProps) {
     } finally {
       setSubmitting(false);
     }
+  }
+
+  function handleChartTrade(nextSide: TicketSide, price: number) {
+    void submit(nextSide, {
+      orderType: oneClick ? "MARKET" : "LIMIT",
+      limitPrice: oneClick ? null : price,
+      stopPrice: null,
+    });
+  }
+
+  function handleApplyIdea({ idea, preferLevel }: SpaceApplyPayload) {
+    if (preferLevel != null && Number.isFinite(preferLevel)) {
+      setInjectDrawing({
+        id: newDrawingId(),
+        type: "hline",
+        price: preferLevel,
+      });
+      setLimitPrice(preferLevel);
+      setOrderType("LIMIT");
+      if (idea.bias === "bullish") setSide("BUY");
+      if (idea.bias === "bearish") setSide("SELL");
+      setMessage(
+        `Space · ${idea.title} — level ${formatPrice(preferLevel)} on chart`,
+      );
+      return;
+    }
+    setMessage(`Space · ${idea.title}`);
   }
 
   async function cancelOrder(id: string) {
@@ -258,7 +318,7 @@ export function TradeView({ symbol }: TradeViewProps) {
             </div>
           </div>
         </div>
-        <SpaceRail symbol={sym} />
+        <SpaceRail symbol={sym} lastPrice={null} onApplyIdea={handleApplyIdea} />
       </div>
     );
   }
@@ -388,9 +448,11 @@ export function TradeView({ symbol }: TradeViewProps) {
             type="button"
             className="at-term-exec-sell"
             disabled={submitting || demoFallback}
-            onClick={() => void submit("SELL")}
+            onClick={() =>
+              void submit("SELL", oneClick ? { orderType: "MARKET" } : undefined)
+            }
           >
-            <span>Sell</span>
+            <span>Sell{oneClick ? " · 1-tap" : ""}</span>
             <span className="at-mono">
               {bid != null ? formatPrice(bid) : "n/a"}
             </span>
@@ -409,13 +471,23 @@ export function TradeView({ symbol }: TradeViewProps) {
             type="button"
             className="at-term-exec-buy"
             disabled={submitting || demoFallback}
-            onClick={() => void submit("BUY")}
+            onClick={() =>
+              void submit("BUY", oneClick ? { orderType: "MARKET" } : undefined)
+            }
           >
-            <span>Buy</span>
+            <span>Buy{oneClick ? " · 1-tap" : ""}</span>
             <span className="at-mono">
               {ask != null ? formatPrice(ask) : "n/a"}
             </span>
           </button>
+          <label className="at-term-oneclick flex cursor-pointer items-center gap-1.5 px-2 text-[0.65rem] font-semibold">
+            <input
+              type="checkbox"
+              checked={oneClick}
+              onChange={(e) => setOneClick(e.target.checked)}
+            />
+            One-click
+          </label>
         </div>
 
         <div
@@ -544,6 +616,12 @@ export function TradeView({ symbol }: TradeViewProps) {
               lastPrice={last}
               indicators={indicatorBundle}
               flags={indicatorFlags}
+              injectDrawing={injectDrawing}
+              onInjectConsumed={() => setInjectDrawing(null)}
+              tradeFromChart
+              oneClick={oneClick}
+              onChartTrade={handleChartTrade}
+              tradeDisabled={submitting || demoFallback || !auth.authenticated}
             />
           </div>
 
@@ -864,7 +942,11 @@ export function TradeView({ symbol }: TradeViewProps) {
           </div>
         </div>
       </div>
-      <SpaceRail symbol={sym} />
+      <SpaceRail
+        symbol={sym}
+        lastPrice={last}
+        onApplyIdea={handleApplyIdea}
+      />
     </div>
   );
 }
