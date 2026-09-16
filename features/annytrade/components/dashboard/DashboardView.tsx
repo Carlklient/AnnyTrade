@@ -414,8 +414,8 @@ export function DashboardView() {
           >
             {(
               [
-                ["practice", "Practice"],
-                ["real", "Real"],
+                ["practice", "Paper"],
+                ["real", "Live (blocked)"],
               ] as const
             ).map(([id, label]) => (
               <button
@@ -442,8 +442,8 @@ export function DashboardView() {
         </div>
         {accountTab === "real" ? (
           <p className="px-4 py-8 text-center text-[0.8125rem] font-bold text-[#020617]">
-            Real-money accounts are not available. Live execution remains hard
-            blocked. Use Practice for paper trading.
+            Live brokerage accounts are not available. Real-money execution
+            stays hard blocked. Use Paper for the practice ledger.
           </p>
         ) : (
           <div className="overflow-x-auto">

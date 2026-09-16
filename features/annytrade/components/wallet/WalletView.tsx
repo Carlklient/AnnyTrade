@@ -1,119 +1,155 @@
 "use client";
 
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
-import { useState } from "react";
-import {
-  Bitcoin,
-  Check,
-  ChevronDown,
-  Sparkles,
-  Star,
-  ThumbsUp,
-} from "lucide-react";
+import { useCallback, useEffect, useState } from "react";
+import { Check, RefreshCw, Sparkles } from "lucide-react";
 
-import { annytradeApi } from "../../services/api";
 import { useAnnyTrade } from "../../context/AnnyTradeContext";
 import { annytradeRoutes } from "../../lib/routes";
 import { formatCompactTime, formatMoney } from "../../lib/format";
+import { annytradeFetch } from "../../services/client";
 
-const METHODS = [
-  {
-    id: "paper-usd",
-    label: "Paper USD",
-    hint: "Simulated cash",
-    Icon: Sparkles,
-  },
-  {
-    id: "demo-boost",
-    label: "Demo boost",
-    hint: "Practice top-up",
-    Icon: Star,
-  },
-  {
-    id: "sandbox",
-    label: "Sandbox credit",
-    hint: "Non-withdrawable",
-    Icon: Bitcoin,
-  },
-] as const;
+const TOP_UPS = [1_000, 5_000, 10_000, 25_000] as const;
+
+type LedgerPayload = {
+  accountId: string;
+  currency: string;
+  cashBalance: number;
+  reserved: number;
+  availableCash: number;
+  initialBalance: number;
+  entries: {
+    id: string;
+    category: string;
+    amount: number;
+    currency: string;
+    memo: string | null;
+    createdAt: string;
+  }[];
+};
 
 export function WalletView() {
-  const searchParams = useSearchParams();
-  const mode = searchParams.get("tab") === "withdraw" ? "withdraw" : "deposit";
-  const { account, auth, user } = useAnnyTrade();
-  const wallet = annytradeApi.getWallet();
-  const txs = annytradeApi.listTransactions();
-  const [method, setMethod] = useState<(typeof METHODS)[number]["id"] | null>(
-    null,
-  );
-  const [amount, setAmount] = useState(500);
+  const { account, auth, refreshAuth } = useAnnyTrade();
+  const [ledger, setLedger] = useState<LedgerPayload | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
-  const primary = wallet.balances[0];
-  const currency = primary?.currency ?? "USD";
+  const load = useCallback(async () => {
+    if (!auth.authenticated) {
+      setLedger(null);
+      return;
+    }
+    setLoading(true);
+    setError(null);
+    try {
+      const data = await annytradeFetch<LedgerPayload>(
+        "/accounts/paper-ledger?limit=40",
+        { method: "GET" },
+      );
+      setLedger(data);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to load ledger");
+    } finally {
+      setLoading(false);
+    }
+  }, [auth.authenticated]);
 
-  function submit() {
-    if (!method) return;
-    setNotice(
-      mode === "withdraw"
-        ? "Practice withdrawal recorded (simulated). No real funds leave AnnyTrade. Custody is not offered."
-        : "Practice funding recorded (simulated). No real money moved. AnnyTrade does not custody customer funds.",
-    );
-    setMethod(null);
+  useEffect(() => {
+    void load();
+  }, [load]);
+
+  async function adjust(action: "top_up" | "reset", amount?: number) {
+    setBusy(true);
+    setNotice(null);
+    setError(null);
+    try {
+      const result = await annytradeFetch<{
+        message: string;
+        cashBalance: number;
+      }>("/accounts/paper-adjust", {
+        method: "POST",
+        body: JSON.stringify({ action, amount }),
+      });
+      setNotice(result.message);
+      await load();
+      await refreshAuth();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Adjustment failed");
+    } finally {
+      setBusy(false);
+    }
   }
+
+  const currency = ledger?.currency ?? account.currency;
+  const cash = ledger?.cashBalance ?? account.balance;
+  const available = ledger?.availableCash ?? account.balance;
 
   return (
     <div className="mx-auto max-w-3xl space-y-4">
       <div className="at-sec-banner">
         <Check className="size-4 shrink-0 text-[var(--at-buy)]" aria-hidden />
         <p className="font-bold">
-          Paper wallet only. Deposits and withdrawals here are simulated for
-          practice. Live custody and payouts are not offered.
+          Paper wallet only. Top-ups adjust your practice ledger. AnnyTrade does
+          not custody real funds or process withdrawals.
         </p>
       </div>
 
-      <div
-        className="flex rounded-full p-0.5 text-[0.8125rem] font-bold"
-        style={{ background: "var(--at-surface-2)" }}
-        role="tablist"
-        aria-label="Wallet mode"
-      >
-        <Link
-          href={annytradeRoutes.wallet}
-          role="tab"
-          aria-selected={mode === "deposit"}
-          className="flex-1 rounded-full px-3 py-2 text-center no-underline transition"
-          style={
-            mode === "deposit"
-              ? {
-                  background: "#fff",
-                  color: "var(--at-accent)",
-                  boxShadow: "var(--at-shadow)",
-                }
-              : { color: "var(--at-text-secondary)" }
-          }
-        >
-          Deposit
-        </Link>
-        <Link
-          href={`${annytradeRoutes.wallet}?tab=withdraw`}
-          role="tab"
-          aria-selected={mode === "withdraw"}
-          className="flex-1 rounded-full px-3 py-2 text-center no-underline transition"
-          style={
-            mode === "withdraw"
-              ? {
-                  background: "#fff",
-                  color: "var(--at-accent)",
-                  boxShadow: "var(--at-shadow)",
-                }
-              : { color: "var(--at-text-secondary)" }
-          }
-        >
-          Withdraw
-        </Link>
-      </div>
+      {!auth.authenticated ? (
+        <section className="at-card">
+          <div className="at-card-body space-y-3">
+            <h1
+              className="text-xl font-bold"
+              style={{ fontFamily: "var(--at-font-display)" }}
+            >
+              Sign in for your paper ledger
+            </h1>
+            <p className="text-[0.875rem] font-semibold text-[#0f172a]">
+              Guest mode shows mock desk chrome only. Sign in to see cash,
+              fills, fees, and practice top-ups from your real paper account.
+            </p>
+            <Link href={annytradeRoutes.auth.login} className="at-btn at-btn-primary">
+              Sign in
+            </Link>
+          </div>
+        </section>
+      ) : null}
+
+      <section className="at-card">
+        <div className="at-card-header">
+          <h2 className="text-sm font-bold">Paper cash</h2>
+          <button
+            type="button"
+            className="at-btn at-btn-ghost h-8 px-2 text-[0.7rem]"
+            onClick={() => void load()}
+            disabled={loading || !auth.authenticated}
+          >
+            <RefreshCw className="size-3.5" />
+            Refresh
+          </button>
+        </div>
+        <div className="at-card-body grid gap-3 sm:grid-cols-3">
+          <div>
+            <p className="at-label">Cash balance</p>
+            <p className="at-mono text-lg font-bold">
+              {formatMoney(cash, currency)}
+            </p>
+          </div>
+          <div>
+            <p className="at-label">Available</p>
+            <p className="at-mono text-lg font-bold">
+              {formatMoney(available, currency)}
+            </p>
+          </div>
+          <div>
+            <p className="at-label">Starting balance</p>
+            <p className="at-mono text-lg font-bold">
+              {formatMoney(ledger?.initialBalance ?? 100_000, currency)}
+            </p>
+          </div>
+        </div>
+      </section>
 
       {notice ? (
         <div
@@ -122,156 +158,71 @@ export function WalletView() {
             borderColor:
               "color-mix(in srgb, var(--at-demo) 35%, var(--at-border))",
             background: "color-mix(in srgb, var(--at-demo) 10%, transparent)",
-            color: "var(--at-text)",
           }}
         >
           {notice}
         </div>
       ) : null}
+      {error ? (
+        <div
+          className="rounded-[12px] border px-3 py-2 text-[0.8125rem] font-bold text-[#7f1d1d]"
+          style={{
+            borderColor: "color-mix(in srgb, var(--at-sell) 40%, var(--at-border))",
+            background: "var(--at-sell-muted)",
+          }}
+        >
+          {error}
+        </div>
+      ) : null}
 
       <section className="at-card">
-        <div className="at-card-body space-y-5">
-          <h1
-            className="text-xl font-bold tracking-[-0.03em] sm:text-2xl"
-            style={{ fontFamily: "var(--at-font-display)" }}
-          >
-            {mode === "withdraw"
-              ? "Select where to withdraw from"
-              : "Select where to transfer the money"}
-          </h1>
-
-          <Link
-            href={
-              auth.authenticated
-                ? annytradeRoutes.account
-                : annytradeRoutes.auth.login
-            }
-            className="flex w-full items-center justify-between rounded-[12px] border px-3 py-3 text-left no-underline transition hover:border-[var(--at-accent)]"
-            style={{
-              borderColor: "var(--at-border)",
-              background: "var(--at-surface-2)",
-              color: "var(--at-text)",
-            }}
-          >
-            <span className="flex items-center gap-2 text-[0.875rem]">
-              <span
-                className="rounded-full px-2 py-0.5 text-[0.65rem] font-bold text-white uppercase"
-                style={{ background: "var(--at-accent)" }}
-              >
-                Practice
-              </span>
-              <span className="font-bold">
-                {auth.authenticated ? user.name || "Trader" : "Guest"}, PAPER
-              </span>
-              <span className="at-mono font-bold text-[#020617]">
-                {formatMoney(primary?.available ?? account.balance, currency)}
-              </span>
-            </span>
-            <ChevronDown className="size-4 font-bold text-[#020617]" />
-          </Link>
-
-          <ul className="flex flex-wrap gap-4 text-[0.75rem] font-bold text-[#020617]">
-            <li className="flex items-center gap-1.5">
-              <Check className="size-3.5 text-[var(--at-buy)]" />
-              No commission on paper
-            </li>
-            <li className="flex items-center gap-1.5">
-              <ThumbsUp className="size-3.5 text-[var(--at-accent)]" />
-              Honest practice marks
-            </li>
-            <li className="flex items-center gap-1.5">
-              <Star className="size-3.5 text-[var(--at-warning)]" />
-              Live execution off
-            </li>
-          </ul>
-
-          <div>
-            <p className="mb-3 text-sm font-bold">
-              {mode === "withdraw"
-                ? "Practice withdrawal"
-                : "New practice deposit"}
-              {auth.authenticated ? ` for ${user.name || "your account"}` : ""}
-            </p>
-            <div className="grid gap-2 sm:grid-cols-3">
-              {METHODS.map((m) => (
-                <button
-                  key={m.id}
-                  type="button"
-                  onClick={() => setMethod(m.id)}
-                  className="flex items-center gap-3 rounded-[14px] border px-3 py-4 text-left transition hover:border-[var(--at-accent)]"
-                  style={{
-                    borderColor:
-                      method === m.id ? "var(--at-accent)" : "var(--at-border)",
-                    background:
-                      method === m.id
-                        ? "var(--at-accent-muted)"
-                        : "var(--at-surface)",
-                    color: "var(--at-text)",
-                  }}
-                >
-                  <m.Icon className="size-7 text-[var(--at-accent)]" />
-                  <span>
-                    <span className="block text-[0.875rem] font-bold">
-                      {m.label}
-                    </span>
-                    <span className="block text-[0.7rem] font-extrabold text-[#020617]">
-                      {m.hint}
-                    </span>
-                  </span>
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {method ? (
-            <div
-              className="space-y-3 rounded-[14px] border p-4"
-              style={{ borderColor: "var(--at-border)" }}
+        <div className="at-card-body space-y-4">
+          <div className="flex items-center gap-2">
+            <Sparkles className="size-5 text-[var(--at-accent)]" />
+            <h1
+              className="text-xl font-bold"
+              style={{ fontFamily: "var(--at-font-display)" }}
             >
-              <label className="block text-[0.75rem] font-bold text-[#020617]">
-                Amount ({currency})
-                <input
-                  type="number"
-                  min={1}
-                  value={amount}
-                  onChange={(e) => setAmount(Number(e.target.value))}
-                  className="at-mono mt-1 w-full rounded-[10px] border px-3 py-2.5 text-base font-bold"
-                  style={{
-                    borderColor: "var(--at-border)",
-                    background: "var(--at-surface-2)",
-                    color: "var(--at-text)",
-                  }}
-                />
-              </label>
-              <div className="flex gap-2">
-                <button
-                  type="button"
-                  className="at-btn at-btn-primary font-bold"
-                  onClick={submit}
-                >
-                  {mode === "withdraw"
-                    ? "Confirm practice withdrawal"
-                    : "Confirm practice deposit"}
-                </button>
-                <button
-                  type="button"
-                  className="at-btn at-btn-ghost font-bold"
-                  onClick={() => setMethod(null)}
-                >
-                  Cancel
-                </button>
-              </div>
-            </div>
-          ) : null}
+              Practice top-up
+            </h1>
+          </div>
+          <p className="text-[0.8125rem] font-semibold text-[#0f172a]">
+            Add synthetic paper cash for practice, or reset toward your starting
+            balance. These are ledger adjustments — not bank transfers.
+          </p>
+          <div className="flex flex-wrap gap-2">
+            {TOP_UPS.map((amount) => (
+              <button
+                key={amount}
+                type="button"
+                className="at-btn at-btn-primary"
+                disabled={busy || !auth.authenticated}
+                onClick={() => void adjust("top_up", amount)}
+              >
+                +{amount.toLocaleString()}
+              </button>
+            ))}
+            <button
+              type="button"
+              className="at-btn at-btn-ghost"
+              disabled={busy || !auth.authenticated}
+              onClick={() => void adjust("reset")}
+            >
+              Reset to start
+            </button>
+          </div>
         </div>
       </section>
 
       <section className="at-card">
         <div className="at-card-header">
-          <h2 className="text-sm font-bold">Recent activity</h2>
+          <h2 className="text-sm font-bold">Ledger activity</h2>
         </div>
         <ul>
-          {txs.slice(0, 8).map((t) => (
+          {loading && !ledger ? (
+            <li className="px-4 py-6 text-[0.8125rem] font-bold">Loading…</li>
+          ) : null}
+          {(ledger?.entries ?? []).map((t) => (
             <li
               key={t.id}
               className="flex items-center justify-between gap-3 border-b px-4 py-3 last:border-0"
@@ -279,10 +230,11 @@ export function WalletView() {
             >
               <div>
                 <p className="text-[0.8125rem] font-bold capitalize">
-                  {t.type}
+                  {t.category.replaceAll("_", " ").toLowerCase()}
                 </p>
-                <p className="text-[0.7rem] font-extrabold text-[#020617]">
-                  {formatCompactTime(t.createdAt)}, {t.status}
+                <p className="text-[0.7rem] font-semibold text-[#0f172a]">
+                  {formatCompactTime(t.createdAt)}
+                  {t.memo ? ` · ${t.memo}` : ""}
                 </p>
               </div>
               <p className="at-mono text-[0.8125rem] font-bold">
@@ -290,9 +242,9 @@ export function WalletView() {
               </p>
             </li>
           ))}
-          {txs.length === 0 ? (
+          {auth.authenticated && ledger && ledger.entries.length === 0 ? (
             <li className="px-4 py-6 text-[0.8125rem] font-bold text-[#020617]">
-              No wallet activity yet.
+              No ledger entries yet.
             </li>
           ) : null}
         </ul>

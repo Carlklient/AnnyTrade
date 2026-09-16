@@ -159,6 +159,7 @@ export function SignalDetailView({ id }: { id: string }) {
             </h2>
           </div>
           <CandleChart
+            symbol={signal.symbol}
             candles={candles}
             loading={candleLoading}
             error={candleError}

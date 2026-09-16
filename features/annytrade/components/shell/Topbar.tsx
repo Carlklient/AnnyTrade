@@ -1,17 +1,18 @@
 "use client";
 
 import Link from "next/link";
-import { Bell, Moon, Search, Sun } from "lucide-react";
+import { Bell, Moon, Sun } from "lucide-react";
 
 import { useAnnyTrade } from "../../context/AnnyTradeContext";
 import { annytradeRoutes } from "../../lib/routes";
 import { formatMoney, pnlClass } from "../../lib/format";
 import { ModeSwitch } from "./ModeSwitch";
+import { GlobalSearch } from "./GlobalSearch";
 import { AnnyTradeLogo } from "../brand/AnnyTradeLogo";
 import { MarketDataBadge } from "../markets/MarketDataBadge";
 
 export function Topbar() {
-  const { account, user, unreadNotifications, theme, toggleTheme, mode } =
+  const { account, user, unreadNotifications, theme, toggleTheme } =
     useAnnyTrade();
 
   return (
@@ -27,17 +28,8 @@ export function Topbar() {
         <AnnyTradeLogo compact />
       </Link>
 
-      <div className="relative hidden min-w-0 flex-1 md:block md:max-w-sm">
-        <Search
-          className="pointer-events-none absolute top-1/2 left-2.5 size-3.5 -translate-y-1/2 font-bold text-[#020617]"
-          strokeWidth={1.75}
-        />
-        <input
-          className="at-input pl-8"
-          placeholder="Search symbols, news, signals…"
-          aria-label="Search"
-        />
-      </div>
+      <GlobalSearch />
+      <GlobalSearch compactTrigger />
 
       <div className="ml-auto flex min-w-0 items-center gap-1.5 sm:gap-3">
         <MarketDataBadge />
@@ -45,9 +37,7 @@ export function Topbar() {
         <ModeSwitch />
 
         <div className="hidden text-right xl:block">
-          <p className="at-label">
-            Equity, {mode === "live" ? "Preview Live" : "Demo"}
-          </p>
+          <p className="at-label">Paper equity</p>
           <p
             className={`at-mono text-[0.8125rem] font-semibold ${pnlClass(account.unrealizedPnl)}`}
           >

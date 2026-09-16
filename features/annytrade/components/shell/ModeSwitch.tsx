@@ -7,8 +7,8 @@ import { cnAt, formatMoney } from "../../lib/format";
 import type { AccountMode } from "../../types";
 
 const MODE_LABEL: Record<AccountMode, { full: string; short: string }> = {
-  demo: { full: "UI Demo", short: "Demo" },
-  live: { full: "UI Preview", short: "Preview" },
+  demo: { full: "Paper", short: "Paper" },
+  live: { full: "Preview UI", short: "Preview" },
 };
 
 export function ModeSwitch() {
@@ -22,7 +22,7 @@ export function ModeSwitch() {
         background: "var(--at-bg-elevated)",
       }}
       role="group"
-      aria-label="Account mode"
+      aria-label="Desk mode"
     >
       {(["demo", "live"] as const).map((m) => {
         const active = mode === m;
@@ -77,14 +77,13 @@ export function ModeBanner() {
         }}
       >
         <span>
-          <strong className="text-[var(--at-text)]">
-            Demo trading environment
-          </strong>
-          : simulated market data and virtual funds only (
-          {formatMoney(account.balance, account.currency)}).
+          <strong className="text-[var(--at-text)]">Paper desk</strong>:
+          practice funds and market data only (
+          {formatMoney(account.balance, account.currency)}). No real-money
+          execution.
         </span>
         <div className="flex flex-wrap items-center gap-2">
-          <span className="at-badge at-badge-demo">Portfolio demo</span>
+          <span className="at-badge at-badge-demo">PAPER</span>
           <Link
             href="/work/annytrade"
             className="text-[0.7rem] font-medium text-[var(--at-accent)] hover:underline lg:hidden"
@@ -105,12 +104,12 @@ export function ModeBanner() {
       }}
     >
       <span>
-        <strong className="text-[var(--at-text)]">UI Preview mode</strong>:
-        layout posture only. Not Broker Live. No real-money execution. Use
-        INTERNAL_PAPER or BROKER_SANDBOX for trading paths.
+        <strong className="text-[var(--at-text)]">Preview UI only</strong>:
+        layout posture for product demos. Does not switch execution. Trading
+        stays on the internal paper ledger (or broker sandbox if connected).
       </span>
       <div className="flex flex-wrap items-center gap-2">
-        <span className="at-badge at-badge-live">Product prototype</span>
+        <span className="at-badge at-badge-live">Preview UI</span>
         <Link
           href="/work/annytrade"
           className="text-[0.7rem] font-medium text-[var(--at-accent)] hover:underline lg:hidden"

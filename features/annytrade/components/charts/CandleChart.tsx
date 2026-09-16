@@ -1,10 +1,25 @@
 "use client";
 
-import { useCallback, useMemo, useRef, useState, type WheelEvent } from "react";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type WheelEvent,
+  type MouseEvent,
+} from "react";
 
 import type { Candle } from "../../types";
 import type { ChartIndicatorBundle } from "../../lib/indicators";
 import type { ChartIndicatorFlags } from "../../lib/chart-prefs";
+import {
+  loadChartDrawings,
+  newDrawingId,
+  saveChartDrawings,
+  type ChartDrawing,
+  type ChartDrawTool,
+} from "../../lib/chart-drawings";
 import { cnAt, formatPrice } from "../../lib/format";
 
 type CandleChartProps = {
@@ -16,6 +31,8 @@ type CandleChartProps = {
   lastPrice?: number | null;
   indicators?: ChartIndicatorBundle | null;
   flags?: ChartIndicatorFlags;
+  /** Used to persist drawings per symbol */
+  symbol?: string;
 };
 
 const DEFAULT_FLAGS: ChartIndicatorFlags = {
@@ -39,10 +56,32 @@ export function CandleChart({
   lastPrice,
   indicators,
   flags = DEFAULT_FLAGS,
+  symbol,
 }: CandleChartProps) {
   const [hoverIdx, setHoverIdx] = useState<number | null>(null);
   const [viewStart, setViewStart] = useState(0);
   const dragRef = useRef<{ x: number; start: number } | null>(null);
+  const [drawTool, setDrawTool] = useState<ChartDrawTool>("none");
+  const [drawings, setDrawings] = useState<ChartDrawing[]>([]);
+  const [trendDraft, setTrendDraft] = useState<{
+    x0: number;
+    price0: number;
+  } | null>(null);
+
+  useEffect(() => {
+    if (!symbol) {
+      setDrawings([]);
+      return;
+    }
+    setDrawings(loadChartDrawings(symbol));
+    setTrendDraft(null);
+    setDrawTool("none");
+  }, [symbol]);
+
+  useEffect(() => {
+    if (!symbol) return;
+    saveChartDrawings(symbol, drawings);
+  }, [symbol, drawings]);
 
   const maxWindow = Math.min(candles.length, 180);
   const windowSize = Math.min(maxWindow, Math.max(40, candles.length));
@@ -153,6 +192,12 @@ export function CandleChart({
   const yScale = (v: number) => pad.top + ((max - v) / range) * priceH;
   const xCenter = (i: number) =>
     pad.left + (i + 0.5) * (innerW / visible.length);
+  const priceFromY = (y: number) => max - ((y - pad.top) / priceH) * range;
+  const indexFromX = (x: number) =>
+    Math.min(
+      visible.length - 1,
+      Math.max(0, Math.floor(((x - pad.left) / innerW) * visible.length)),
+    );
 
   const hover = hoverIdx != null ? visible[hoverIdx] : null;
   const hoverGlobal = hoverIdx != null ? idxOffset + hoverIdx : null;
@@ -183,13 +228,109 @@ export function CandleChart({
   const volTop = pad.top + priceH + 8;
   let cursorY = volTop + (showVol ? 56 : 0);
 
+  function handleChartClick(e: MouseEvent<SVGSVGElement>) {
+    if (drawTool === "none") return;
+    const rect = e.currentTarget.getBoundingClientRect();
+    const px = ((e.clientX - rect.left) / rect.width) * width;
+    const py = ((e.clientY - rect.top) / rect.height) * height;
+    if (py < pad.top || py > pad.top + priceH) return;
+    const localIdx = indexFromX(px);
+    const globalIdx = idxOffset + localIdx;
+    const price = Number(priceFromY(py).toFixed(6));
+
+    if (drawTool === "hline") {
+      setDrawings((prev) => [
+        ...prev,
+        { id: newDrawingId(), type: "hline", price },
+      ]);
+      setDrawTool("none");
+      return;
+    }
+
+    if (drawTool === "trend") {
+      if (!trendDraft) {
+        setTrendDraft({ x0: globalIdx, price0: price });
+        return;
+      }
+      setDrawings((prev) => [
+        ...prev,
+        {
+          id: newDrawingId(),
+          type: "trend",
+          x0: trendDraft.x0,
+          price0: trendDraft.price0,
+          x1: globalIdx,
+          price1: price,
+        },
+      ]);
+      setTrendDraft(null);
+      setDrawTool("none");
+    }
+  }
+
   return (
     <div
       className={cnAt("relative w-full overflow-hidden select-none", className)}
     >
+      <div className="mb-2 flex flex-wrap items-center gap-1.5 px-1">
+        <span className="at-label mr-1">Draw</span>
+        <button
+          type="button"
+          className="at-btn at-btn-ghost h-7 px-2 text-[0.65rem]"
+          data-active={drawTool === "hline" ? "true" : "false"}
+          style={
+            drawTool === "hline"
+              ? { background: "var(--at-accent-muted)", color: "var(--at-accent)" }
+              : undefined
+          }
+          onClick={() => {
+            setTrendDraft(null);
+            setDrawTool((t) => (t === "hline" ? "none" : "hline"));
+          }}
+        >
+          H-Line
+        </button>
+        <button
+          type="button"
+          className="at-btn at-btn-ghost h-7 px-2 text-[0.65rem]"
+          style={
+            drawTool === "trend"
+              ? { background: "var(--at-accent-muted)", color: "var(--at-accent)" }
+              : undefined
+          }
+          onClick={() => {
+            setTrendDraft(null);
+            setDrawTool((t) => (t === "trend" ? "none" : "trend"));
+          }}
+        >
+          Trend
+        </button>
+        <button
+          type="button"
+          className="at-btn at-btn-ghost h-7 px-2 text-[0.65rem]"
+          onClick={() => {
+            setDrawings([]);
+            setTrendDraft(null);
+            setDrawTool("none");
+          }}
+          disabled={drawings.length === 0}
+        >
+          Clear
+        </button>
+        {drawTool !== "none" ? (
+          <span className="text-[0.65rem] font-semibold text-[#0f172a]">
+            {drawTool === "hline"
+              ? "Click chart to place horizontal"
+              : trendDraft
+                ? "Click second point"
+                : "Click first point"}
+          </span>
+        ) : null}
+      </div>
+
       {hover ? (
         <div
-          className="pointer-events-none absolute top-2 left-2 z-10 rounded-[6px] border px-2 py-1.5 text-[0.7rem]"
+          className="pointer-events-none absolute top-10 left-2 z-10 rounded-[6px] border px-2 py-1.5 text-[0.7rem]"
           style={{
             borderColor: "var(--at-border)",
             background: "var(--at-bg-elevated)",
@@ -202,7 +343,6 @@ export function CandleChart({
           <p className="at-mono mt-0.5">
             O {formatPrice(hover.open)}, H {formatPrice(hover.high)}, L{" "}
             {formatPrice(hover.low)}, C {formatPrice(hover.close)}
-            {hover.close >= hover.open ? " â, ²" : " â, ¼"}
           </p>
           {hover.volume > 0 ? (
             <p className="at-mono font-bold text-[#020617]">
@@ -225,8 +365,11 @@ export function CandleChart({
         className="h-[320px] w-full touch-pan-y sm:h-[380px] lg:h-[420px]"
         role="img"
         aria-label={`Candlestick chart with ${paneCount} panes. Use scroll to pan.`}
+        style={{ cursor: drawTool === "none" ? undefined : "crosshair" }}
         onWheel={onWheel}
+        onClick={handleChartClick}
         onPointerDown={(e) => {
+          if (drawTool !== "none") return;
           (e.target as Element).setPointerCapture?.(e.pointerId);
           dragRef.current = { x: e.clientX, start };
         }}
@@ -243,7 +386,7 @@ export function CandleChart({
             ),
           );
           setHoverIdx(i);
-          if (dragRef.current) {
+          if (dragRef.current && drawTool === "none") {
             const dx = e.clientX - dragRef.current.x;
             const shift = Math.round((-dx / rect.width) * visible.length);
             setViewStart(
@@ -596,6 +739,67 @@ export function CandleChart({
             })()
           : null}
 
+        {drawings.map((d) => {
+          if (d.type === "hline") {
+            const y = yScale(d.price);
+            if (y < pad.top || y > pad.top + priceH) return null;
+            return (
+              <g key={d.id}>
+                <line
+                  x1={pad.left}
+                  x2={width - pad.right}
+                  y1={y}
+                  y2={y}
+                  stroke="var(--at-accent)"
+                  strokeWidth={1.25}
+                  strokeDasharray="5 4"
+                />
+                <text
+                  x={width - pad.right + 4}
+                  y={y + 3}
+                  fill="var(--at-accent)"
+                  fontSize={9}
+                  fontWeight={700}
+                >
+                  {formatPrice(d.price)}
+                </text>
+              </g>
+            );
+          }
+          const lx0 = d.x0 - idxOffset;
+          const lx1 = d.x1 - idxOffset;
+          if (
+            (lx0 < 0 && lx1 < 0) ||
+            (lx0 >= visible.length && lx1 >= visible.length)
+          ) {
+            return null;
+          }
+          return (
+            <line
+              key={d.id}
+              x1={xCenter(Math.min(visible.length - 1, Math.max(0, lx0)))}
+              y1={yScale(d.price0)}
+              x2={xCenter(Math.min(visible.length - 1, Math.max(0, lx1)))}
+              y2={yScale(d.price1)}
+              stroke="var(--at-accent)"
+              strokeWidth={1.5}
+            />
+          );
+        })}
+        {trendDraft ? (
+          <circle
+            cx={xCenter(
+              Math.min(
+                visible.length - 1,
+                Math.max(0, trendDraft.x0 - idxOffset),
+              ),
+            )}
+            cy={yScale(trendDraft.price0)}
+            r={3.5}
+            fill="var(--at-accent)"
+          />
+        ) : null}
+
         {hoverIdx != null ? (
           <line
             x1={xCenter(hoverIdx)}
@@ -609,8 +813,8 @@ export function CandleChart({
         ) : null}
       </svg>
       <p className="px-3 pb-2 text-[0.65rem] font-bold text-[#020617]">
-        Scroll or drag to pan, Hollow/hatched = down, solid = up, Educational
-        overlays only
+        Scroll or drag to pan · H-Line / Trend drawings save locally ·
+        Educational overlays only
       </p>
     </div>
   );

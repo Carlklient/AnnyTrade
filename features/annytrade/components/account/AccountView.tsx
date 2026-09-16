@@ -238,19 +238,19 @@ export function AccountView() {
           <div className="at-card-body space-y-3 text-[0.8125rem]">
             <div className="flex items-center justify-between gap-3">
               <span className="font-bold text-[#020617]">
-                Demo / Preview Live UI
+                Paper / Preview UI
               </span>
               <ModeSwitch />
             </div>
             <Row
               label="UI posture"
-              value={mode === "live" ? "Preview Live" : "Demo"}
+              value={mode === "live" ? "Preview UI" : "Paper"}
             />
             <p className="text-[0.7rem] font-bold text-[#020617]">
-              Preview Live only changes UI posture. Paper ledger funds are not
-              real money. Market quotes remain simulated.
+              Preview UI only changes layout chrome. Paper ledger funds are not
+              real money. Market quotes may be DEMO or a live vendor feed.
             </p>
-            <Row label="Mock desk id" value={account.id} />
+            <Row label="Desk account id" value={account.id} />
           </div>
         </section>
 

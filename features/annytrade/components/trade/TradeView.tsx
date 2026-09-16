@@ -20,6 +20,7 @@ import {
   pnlClass,
 } from "../../lib/format";
 import { computeChartIndicators } from "../../lib/indicators";
+import { buildIllustrativeOrderBook } from "../../lib/order-book";
 import {
   DEFAULT_CHART_PREFS,
   loadChartPrefs,
@@ -96,7 +97,6 @@ export function TradeView({ symbol }: TradeViewProps) {
     empty,
   } = useCandles(sym, timeframe.interval, timeframe.limit);
 
-  const book = annytradeApi.getOrderBook(sym);
   const demoAsset = annytradeApi.getAsset(sym);
   const demoPriceData = annytradeApi.getPriceData(sym);
 
@@ -144,6 +144,10 @@ export function TradeView({ symbol }: TradeViewProps) {
     : (num(quote?.changePercent) ?? 0);
   const high = demoFallback ? demoAsset!.high : num(quote?.high);
   const low = demoFallback ? demoAsset!.low : num(quote?.low);
+  const book = useMemo(
+    () => buildIllustrativeOrderBook({ last, bid, ask }),
+    [last, bid, ask],
+  );
 
   useEffect(() => {
     if (last != null) {
@@ -532,6 +536,7 @@ export function TradeView({ symbol }: TradeViewProps) {
               </div>
             ) : null}
             <CandleChart
+              symbol={sym}
               candles={chartCandles}
               loading={demoFallback ? false : candleLoading}
               error={demoFallback ? null : candleError}
@@ -546,11 +551,12 @@ export function TradeView({ symbol }: TradeViewProps) {
             <div className="at-card">
               <div className="at-card-header">
                 <h2 className="text-sm font-semibold">Order book</h2>
-                <span className="at-label">Preview</span>
+                <span className="at-badge at-badge-demo">Illustrative</span>
               </div>
               <div className="at-card-body space-y-3 pt-2">
                 <p className="text-[0.65rem] font-bold text-[#020617]">
-                  Depth is illustrative preview, not live exchange depth.
+                  Simulated ladder from quote · not live Level 2 / exchange
+                  depth.
                 </p>
                 {book ? (
                   <>
@@ -565,7 +571,7 @@ export function TradeView({ symbol }: TradeViewProps) {
                   </>
                 ) : (
                   <p className="text-[0.8125rem] font-bold text-[#020617]">
-                    No preview depth for this symbol.
+                    Waiting for quote to build illustrative depth.
                   </p>
                 )}
               </div>
