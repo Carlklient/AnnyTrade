@@ -24,7 +24,11 @@ export function Topbar() {
         backdropFilter: "blur(14px)",
       }}
     >
-      <Link href={annytradeRoutes.dashboard} className="shrink-0 lg:hidden">
+      <Link
+        href={annytradeRoutes.root}
+        className="shrink-0 lg:hidden"
+        aria-label="AnnyTrade home"
+      >
         <AnnyTradeLogo compact />
       </Link>
 

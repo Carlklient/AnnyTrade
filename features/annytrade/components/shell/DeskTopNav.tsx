@@ -34,9 +34,10 @@ export function DeskTopNav() {
   return (
     <header className="at-desk-nav">
       <Link
-        href={annytradeRoutes.dashboard}
+        href={annytradeRoutes.root}
         className="flex shrink-0 items-center gap-2 no-underline"
         style={{ color: "var(--at-text)" }}
+        aria-label="AnnyTrade home"
       >
         <span
           className="grid size-7 place-items-center rounded-[8px] text-white"

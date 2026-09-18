@@ -52,7 +52,7 @@ export function Sidebar() {
       }}
     >
       <div className="flex h-[var(--at-topbar-h)] items-center px-4">
-        <Link href="/annytrade/dashboard" className="outline-none">
+        <Link href={annytradeRoutes.root} className="outline-none" aria-label="AnnyTrade home">
           <AnnyTradeLogo />
         </Link>
       </div>
