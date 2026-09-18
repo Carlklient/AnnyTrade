@@ -21,7 +21,6 @@ import type {
 } from "../types/backend";
 import { PaperJobTicker } from "../components/shell/PaperJobTicker";
 import { PwaRegister } from "../components/shell/PwaRegister";
-import { DeskTour } from "../components/shell/DeskTour";
 import { WebVitalsReporter } from "../components/shell/WebVitalsReporter";
 import {
   playDeskChime,
@@ -296,7 +295,6 @@ export function AnnyTradeProvider({ children }: { children: ReactNode }) {
     <AnnyTradeContext.Provider value={value}>
       <PwaRegister />
       <PaperJobTicker />
-      <DeskTour />
       <WebVitalsReporter />
       {children}
     </AnnyTradeContext.Provider>

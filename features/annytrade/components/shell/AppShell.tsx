@@ -7,6 +7,7 @@ import { useAnnyTrade } from "../../context/AnnyTradeContext";
 import { MobileNav } from "./MobileNav";
 import { DeskTopNav } from "./DeskTopNav";
 import { TradingTopMetrics } from "./TradingTopMetrics";
+import { DeskTour } from "./DeskTour";
 import "../../styles/desk.css";
 
 export function AppShell({ children }: { children: ReactNode }) {
@@ -38,6 +39,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         </div>
         <MobileNav />
       </div>
+      <DeskTour />
     </div>
   );
 }
