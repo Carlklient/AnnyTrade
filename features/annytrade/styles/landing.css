@@ -1105,11 +1105,21 @@
   width: 7rem;
   height: 7rem;
   border-radius: 0.75rem;
-  background: repeating-conic-gradient(#111 0% 25%, #fff 0% 50%) 0 0 / 12px 12px;
+  background: #fff;
   box-shadow:
     inset 0 0 0 8px #fff,
     0 0 0 1px var(--atl-border);
   flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+}
+
+[data-at-landing] .atl-qr-live img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
 }
 
 [data-at-landing] .atl-qr-label {
@@ -1118,6 +1128,15 @@
   letter-spacing: 0.04em;
   text-transform: uppercase;
   color: var(--atl-text-secondary);
+}
+
+[data-at-landing] .atl-qr-hint {
+  margin: 0.35rem 0 0;
+  max-width: 16rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  line-height: 1.4;
+  color: #0f172a;
 }
 
 /* Footer */

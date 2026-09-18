@@ -2,6 +2,7 @@ import Link from "next/link";
 
 import { annytradeRoutes } from "../../lib/routes";
 import { BrandMark, LandingNav } from "./LandingNav";
+import { RegisterQr } from "./RegisterQr";
 import { TradeDeviceMock } from "./TradeDeviceMock";
 import "../../styles/landing.css";
 
@@ -378,13 +379,12 @@ export function LandingPage() {
               account creation, no app-store install required for this demo.
             </p>
             <div className="atl-qr-row">
-              <Link
-                href={annytradeRoutes.auth.register}
-                className="atl-qr"
-                aria-label="Open account"
-              />
+              <RegisterQr />
               <div>
                 <div className="atl-qr-label">Scan to open account</div>
+                <p className="atl-qr-hint">
+                  Phone camera opens signup. Or tap the code / Enter desk.
+                </p>
                 <Link
                   href={annytradeRoutes.dashboard}
                   className="atl-btn atl-btn-primary"
