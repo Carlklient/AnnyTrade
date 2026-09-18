@@ -58,12 +58,37 @@
 }
 
 [data-annytrade][data-at-theme="dark"] .at-content,
+[data-annytrade][data-at-theme="dark"] .text-\[\#020617\],
+[data-annytrade][data-at-theme="dark"] .text-\[\#0f172a\],
 [data-annytrade][data-at-theme="dark"] .font-bold.text-\[\#020617\],
-[data-annytrade][data-at-theme="dark"] .text-\[\#020617\] {
+[data-annytrade][data-at-theme="dark"] .font-extrabold.text-\[\#020617\],
+[data-annytrade][data-at-theme="dark"] [class*="text-[#020617]"],
+[data-annytrade][data-at-theme="dark"] [class*="text-[#0f172a]"] {
   color: var(--at-text) !important;
 }
 
-/* Desk copy: no washed-out grey — bold near-black */
+[data-annytrade][data-at-theme="dark"] .at-card-header,
+[data-annytrade][data-at-theme="dark"] .at-card-header h2 {
+  color: var(--at-text);
+}
+
+[data-annytrade][data-at-theme="dark"] .at-desk-nav {
+  background: var(--at-bg-elevated);
+  border-bottom-color: var(--at-border);
+}
+
+[data-annytrade][data-at-theme="dark"] .at-desk-nav-link[data-active="true"],
+[data-annytrade][data-at-theme="terminal"] .at-desk-nav-link[data-active="true"] {
+  color: #fff !important;
+  background: var(--at-accent);
+}
+
+[data-annytrade][data-at-theme="light"] .at-desk-nav-link[data-active="true"] {
+  color: var(--at-accent);
+  background: var(--at-accent-muted);
+}
+
+/* Desk copy follows theme tokens (never force black — breaks dark mode) */
 [data-annytrade][data-at-desk="octa"] .at-content {
   color: var(--at-text);
   font-weight: 600;
@@ -94,7 +119,7 @@
   .at-content
   :is(p, li, label, time, small, dd, dt, th, td, .lbl, .at-label) {
   font-weight: 800;
-  color: #000;
+  color: var(--at-text);
 }
 
 [data-annytrade][data-at-desk="octa"] .at-content a {
@@ -125,9 +150,9 @@
 }
 
 [data-annytrade][data-at-desk="octa"] .at-btn-ghost {
-  color: #020617;
-  border: 1.5px solid #64748b;
-  background: #fff;
+  color: var(--at-text);
+  border: 1.5px solid var(--at-border-strong);
+  background: var(--at-surface);
   font-weight: 800;
 }
 
@@ -143,7 +168,7 @@
 
 [data-annytrade][data-at-desk="octa"] .at-desk-nav-link {
   font-weight: 700;
-  color: #020617;
+  color: var(--at-text-secondary);
 }
 
 [data-annytrade][data-at-desk="octa"].at-shell {
@@ -193,7 +218,7 @@
   gap: 1rem;
   height: var(--at-topbar-h);
   padding: 0 1rem;
-  background: #fff;
+  background: var(--at-bg-elevated);
   border-bottom: 1px solid var(--at-border);
 }
 
@@ -236,7 +261,7 @@
   gap: 0.65rem;
   padding: 0.7rem 1rem;
   border-radius: var(--at-radius-sm);
-  background: color-mix(in srgb, var(--at-accent) 8%, #fff);
+  background: color-mix(in srgb, var(--at-accent) 12%, var(--at-surface));
   color: var(--at-text);
   font-size: 0.8125rem;
   font-weight: 600;
@@ -268,7 +293,7 @@
 .at-metric-row .lbl {
   font-size: 0.8125rem;
   font-weight: 800 !important;
-  color: #000 !important;
+  color: var(--at-text-secondary) !important;
 }
 
 .at-metric-row .val {
@@ -276,7 +301,7 @@
   font-family: var(--at-font-sans);
   font-size: 0.9375rem;
   font-weight: 800 !important;
-  color: #000 !important;
+  color: var(--at-text) !important;
   font-variant-numeric: lining-nums;
 }
 
@@ -290,7 +315,7 @@
 .at-promo {
   border-radius: var(--at-radius);
   padding: 1.25rem 1.35rem;
-  background: linear-gradient(135deg, #e8efff, #f5f7fb);
+  background: color-mix(in srgb, var(--at-accent) 10%, var(--at-surface-2));
   border: 1px solid var(--at-border);
   display: flex;
   flex-wrap: wrap;
@@ -310,7 +335,7 @@
   margin: 0.35rem 0 0;
   font-size: 0.8125rem;
   font-weight: 800;
-  color: #020617;
+  color: var(--at-text);
 }
 
 .at-feed-item {
@@ -328,7 +353,7 @@
   gap: 0.5rem;
   font-size: 0.75rem;
   font-weight: 800;
-  color: #020617;
+  color: var(--at-text-secondary);
 }
 
 .at-feed-item h3 {
@@ -343,7 +368,7 @@
   margin: 0.35rem 0 0;
   font-size: 0.8125rem;
   font-weight: 800;
-  color: #020617;
+  color: var(--at-text);
   line-height: 1.45;
 }
 

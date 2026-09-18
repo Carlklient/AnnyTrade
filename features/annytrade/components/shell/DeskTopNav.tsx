@@ -89,7 +89,7 @@ export function DeskTopNav() {
       <div className="ml-auto flex items-center gap-2">
         {auth.authenticated ? (
           <span className="hidden text-right text-[0.75rem] sm:block">
-            <span className="block font-bold text-[#020617]">Practice</span>
+            <span className="block font-bold text-[var(--at-text)]">Practice</span>
             <span className="at-mono font-bold">
               {formatMoney(account.equity, account.currency)}
             </span>

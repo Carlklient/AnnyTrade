@@ -116,7 +116,7 @@ export function DashboardView() {
           <div className="flex items-center gap-2">
             <h2 className="text-sm font-bold">Practice accounts</h2>
             <ChevronDown
-              className="size-4 font-bold text-[#020617]"
+              className="size-4 font-bold text-[var(--at-text)]"
               aria-hidden
             />
           </div>
@@ -160,12 +160,12 @@ export function DashboardView() {
                   : "Sign in for your paper book"}
               </span>
             </span>
-            <ChevronDown className="size-4 font-bold text-[#020617]" />
+            <ChevronDown className="size-4 font-bold text-[var(--at-text)]" />
           </Link>
 
           <div>
             <p
-              className="text-[2.5rem] leading-none font-medium tracking-normal text-[#020617] sm:text-[3rem]"
+              className="text-[2.5rem] leading-none font-medium tracking-normal text-[var(--at-text)] sm:text-[3rem]"
               style={{
                 fontFamily: "var(--at-font-sans)",
                 fontVariantNumeric: "lining-nums",
@@ -173,16 +173,14 @@ export function DashboardView() {
             >
               {auth.authenticated ? formatMoney(balance, currency) : "$0.00"}
             </p>
-            <p className="mt-2 text-[0.75rem] font-extrabold text-[#020617]">
+            <p className="mt-2 text-[0.75rem] font-extrabold text-[var(--at-text-secondary)]">
               Simulated balance, not withdrawable, not live brokerage
             </p>
           </div>
 
           <div className="at-metric-row">
             <div>
-              <p className="lbl" style={{ color: "#000", fontWeight: 900 }}>
-                Total profit
-              </p>
+              <p className="lbl">Total profit</p>
               <p
                 className={`val ${totalPnl != null ? pnlClass(totalPnl) : ""}`}
               >
@@ -192,9 +190,7 @@ export function DashboardView() {
               </p>
             </div>
             <div>
-              <p className="lbl" style={{ color: "#000", fontWeight: 900 }}>
-                Equity
-              </p>
+              <p className="lbl">Equity</p>
               <p className="val">
                 {auth.authenticated && equity != null
                   ? formatMoney(equity, currency)
@@ -202,23 +198,17 @@ export function DashboardView() {
               </p>
             </div>
             <div>
-              <p className="lbl" style={{ color: "#000", fontWeight: 900 }}>
-                Available
-              </p>
+              <p className="lbl">Available</p>
               <p className="val">
                 {auth.authenticated ? formatMoney(available, currency) : "n/a"}
               </p>
             </div>
             <div>
-              <p className="lbl" style={{ color: "#000", fontWeight: 900 }}>
-                Bonus
-              </p>
+              <p className="lbl">Bonus</p>
               <p className="val">$0.00</p>
             </div>
             <div>
-              <p className="lbl" style={{ color: "#000", fontWeight: 900 }}>
-                Net profit
-              </p>
+              <p className="lbl">Net profit</p>
               <p className={`val ${pnlClass(unrealized)}`}>
                 {auth.authenticated
                   ? formatMoney(unrealized, currency, { signed: true })
@@ -263,7 +253,7 @@ export function DashboardView() {
             <h2 className="text-sm font-bold">Popular funding methods</h2>
           </div>
           <div className="at-card-body">
-            <p className="mb-3 text-[0.75rem] font-extrabold text-[#020617]">
+            <p className="mb-3 text-[0.75rem] font-extrabold text-[var(--at-text-secondary)]">
               Demo labels only. AnnyTrade does not custody crypto or customer
               funds. Deposit opens paper wallet funding.
             </p>
@@ -288,7 +278,7 @@ export function DashboardView() {
                 </Link>
               ))}
             </div>
-            <ul className="mt-4 flex flex-wrap gap-4 text-[0.75rem] font-bold text-[#020617]">
+            <ul className="mt-4 flex flex-wrap gap-4 text-[0.75rem] font-bold text-[var(--at-text)]">
               <li className="flex items-center gap-1.5">
                 <ShieldCheck className="size-3.5 text-[var(--at-buy)]" />
                 No commission on paper
@@ -317,7 +307,7 @@ export function DashboardView() {
           </div>
           <ul>
             {quotesLoading && movers.length === 0 ? (
-              <li className="px-4 py-6 text-[0.8125rem] font-bold text-[#020617]">
+              <li className="px-4 py-6 text-[0.8125rem] font-bold text-[var(--at-text)]">
                 Loading quotes…
               </li>
             ) : null}
@@ -349,7 +339,7 @@ export function DashboardView() {
               </li>
             ))}
             {!quotesLoading && movers.length === 0 ? (
-              <li className="px-4 py-6 text-[0.8125rem] font-bold text-[#020617]">
+              <li className="px-4 py-6 text-[0.8125rem] font-bold text-[var(--at-text)]">
                 No watchlist quotes yet.{" "}
                 <Link
                   href={annytradeRoutes.markets}
@@ -441,7 +431,7 @@ export function DashboardView() {
           </div>
         </div>
         {accountTab === "real" ? (
-          <p className="px-4 py-8 text-center text-[0.8125rem] font-bold text-[#020617]">
+          <p className="px-4 py-8 text-center text-[0.8125rem] font-bold text-[var(--at-text)]">
             Live brokerage accounts are not available. Real-money execution
             stays hard blocked. Use Paper for the practice ledger.
           </p>
@@ -450,7 +440,7 @@ export function DashboardView() {
             <table className="w-full min-w-[520px] text-left text-[0.8125rem]">
               <thead>
                 <tr
-                  className="border-b font-bold text-[#020617]"
+                  className="border-b font-bold text-[var(--at-text)]"
                   style={{ borderColor: "var(--at-border)" }}
                 >
                   {["Account", "Type", "Balance", "Equity"].map((h) => (
@@ -476,7 +466,7 @@ export function DashboardView() {
                             ? "Paper, AnnyTrade"
                             : "Guest demo"}
                         </p>
-                        <p className="text-[0.7rem] font-bold text-[#020617]">
+                        <p className="text-[0.7rem] font-bold text-[var(--at-text)]">
                           USD practice book
                         </p>
                       </div>
@@ -508,7 +498,7 @@ export function DashboardView() {
                         Position, {p.symbol}
                       </Link>
                     </td>
-                    <td className="px-4 py-3 font-bold text-[#020617]">Open</td>
+                    <td className="px-4 py-3 font-bold text-[var(--at-text)]">Open</td>
                     <td className="at-mono px-4 py-3 font-bold">
                       {p.quantity}
                     </td>
@@ -542,7 +532,7 @@ export function DashboardView() {
         </div>
         <div className="at-card-body pt-0">
           {articles.length === 0 ? (
-            <p className="py-6 text-[0.8125rem] font-bold text-[#020617]">
+            <p className="py-6 text-[0.8125rem] font-bold text-[var(--at-text)]">
               No feed items yet.{" "}
               <Link
                 href={annytradeRoutes.news}
