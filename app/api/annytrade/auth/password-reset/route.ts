@@ -21,8 +21,20 @@ export async function POST(request: NextRequest) {
         return { body: { ok: true } };
       }
       const body = passwordResetRequestSchema.parse(json);
-      await requestPasswordReset(body.email);
-      return { body: { ok: true } };
+      const delivery = await requestPasswordReset(body.email);
+      return {
+        body: {
+          ok: true,
+          emailDelivery: {
+            sent: delivery.emailed,
+            reason: delivery.reason,
+            ...(delivery.resetUrl ? { resetUrl: delivery.resetUrl } : {}),
+            ...(delivery.resetToken
+              ? { resetToken: delivery.resetToken }
+              : {}),
+          },
+        },
+      };
     },
     {
       rateLimit: { scope: "auth.password_reset", limit: 8, windowMs: 60_000 },

@@ -93,7 +93,15 @@ export function AuthView({ variant }: { variant: AuthVariant }) {
       }
 
       if (variant === "register") {
-        await annytradeFetch("/auth/register", {
+        const reg = await annytradeFetch<{
+          user: unknown;
+          emailDelivery?: {
+            sent: boolean;
+            reason?: string;
+            verifyUrl?: string;
+            verifyToken?: string;
+          };
+        }>("/auth/register", {
           method: "POST",
           body: JSON.stringify({
             email: String(form.get("email") ?? ""),
@@ -102,15 +110,42 @@ export function AuthView({ variant }: { variant: AuthVariant }) {
           }),
         });
         await refreshAuth();
+        if (reg.emailDelivery && !reg.emailDelivery.sent) {
+          const link =
+            reg.emailDelivery.verifyUrl ||
+            (reg.emailDelivery.verifyToken
+              ? `${annytradeRoutes.auth.verify}?token=${encodeURIComponent(reg.emailDelivery.verifyToken)}`
+              : null);
+          if (link) {
+            setInfo(
+              `Account created. Email offline — verify here: ${link}`,
+            );
+            return;
+          }
+        }
         router.push(copy.next ?? annytradeRoutes.dashboard);
         return;
       }
 
       if (variant === "forgot") {
-        await annytradeFetch("/auth/password-reset", {
+        const reset = await annytradeFetch<{
+          ok: boolean;
+          emailDelivery?: {
+            sent?: boolean;
+            resetUrl?: string;
+            resetToken?: string;
+          };
+        }>("/auth/password-reset", {
           method: "POST",
           body: JSON.stringify({ email: String(form.get("email") ?? "") }),
         });
+        if (reset.emailDelivery?.resetUrl || reset.emailDelivery?.resetToken) {
+          const link =
+            reset.emailDelivery.resetUrl ||
+            `${annytradeRoutes.auth.reset}?token=${encodeURIComponent(reset.emailDelivery.resetToken!)}`;
+          setInfo(`Email offline — use this reset link: ${link}`);
+          return;
+        }
         setInfo("If that email exists, a reset token was issued.");
         return;
       }

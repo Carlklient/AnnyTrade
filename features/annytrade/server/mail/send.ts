@@ -9,12 +9,10 @@ export async function sendTransactionalEmail(input: {
   const apiKey = env.resend.apiKey;
   const from = env.resend.fromEmail;
   if (!apiKey || !from) {
-    if (process.env.NODE_ENV !== "production") {
-      console.info("[annytrade] email skipped (Resend not configured)", {
-        to: input.to,
-        subject: input.subject,
-      });
-    }
+    console.info("[annytrade] email skipped (Resend not configured)", {
+      to: input.to,
+      subject: input.subject,
+    });
     return { sent: false, reason: "resend_not_configured" };
   }
   try {
@@ -29,7 +27,9 @@ export async function sendTransactionalEmail(input: {
         to: input.to,
         subject: input.subject,
         text: input.text,
-        html: input.html ?? `<pre style="font-family:sans-serif">${input.text}</pre>`,
+        html:
+          input.html ??
+          `<pre style="font-family:sans-serif;white-space:pre-wrap">${input.text}</pre>`,
       }),
     });
     if (!res.ok) {
@@ -47,4 +47,14 @@ export function appPublicUrl(): string {
     env.app.url.replace(/\/$/, "") ||
     "https://annytrade.onrender.com"
   );
+}
+
+/** Paper-desk fallback: return auth links in API when Resend cannot send. */
+export function mailFallbackExposeEnabled(): boolean {
+  const v = process.env.ANNYTRADE_MAIL_FALLBACK_EXPOSE?.trim().toLowerCase();
+  return v === "1" || v === "true" || v === "yes";
+}
+
+export function resendConfigured(): boolean {
+  return Boolean(env.resend.apiKey && env.resend.fromEmail);
 }

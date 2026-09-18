@@ -16,7 +16,10 @@ export async function POST(request: NextRequest) {
         request,
       });
       return {
-        body: { user: result.user },
+        body: {
+          user: result.user,
+          emailDelivery: result.emailDelivery,
+        },
         status: 201,
         setSession: result.token,
       };

@@ -34,7 +34,11 @@ import {
   type PublicUser,
 } from "../domain/types";
 import { normalizeEmail } from "../validation/schemas";
-import { appPublicUrl, sendTransactionalEmail } from "../mail/send";
+import {
+  appPublicUrl,
+  mailFallbackExposeEnabled,
+  sendTransactionalEmail,
+} from "../mail/send";
 
 function clientMeta(request?: NextRequest) {
   if (!request) return { ip: null as string | null, ua: null as string | null };
@@ -51,7 +55,16 @@ export async function registerUser(input: {
   password: string;
   displayName: string;
   request?: NextRequest;
-}): Promise<{ user: PublicUser; token: string }> {
+}): Promise<{
+  user: PublicUser;
+  token: string;
+  emailDelivery: {
+    sent: boolean;
+    reason?: string;
+    verifyUrl?: string;
+    verifyToken?: string;
+  };
+}> {
   const emailNormalized = normalizeEmail(input.email);
   const existing = await findUserByNormalizedEmail(emailNormalized);
   if (existing) {
@@ -95,17 +108,26 @@ export async function registerUser(input: {
   `;
 
   const verifyUrl = `${appPublicUrl()}/annytrade/auth/verify?token=${encodeURIComponent(verifyToken)}`;
-  await sendTransactionalEmail({
+  const mail = await sendTransactionalEmail({
     to: user.email,
     subject: "Verify your AnnyTrade email",
     text: `Welcome to AnnyTrade.\n\nVerify your email:\n${verifyUrl}\n\nOr paste this token on the verify page:\n${verifyToken}\n\nPAPER trading only — no live money.`,
+  });
+
+  await createNotification({
+    userId: user.id,
+    type: "security",
+    title: mail.sent ? "Verify your email" : "Verify your email (mail offline)",
+    message: mail.sent
+      ? "We sent a verification link to your inbox."
+      : `Email provider offline. Open this link to verify: ${verifyUrl}`,
   });
 
   const meta = clientMeta(input.request);
   await recordAuditEvent({
     userId: user.id,
     eventType: "auth.register",
-    metadata: { email: emailNormalized },
+    metadata: { email: emailNormalized, emailSent: mail.sent },
     ipAddress: meta.ip,
     userAgent: meta.ua,
   });
@@ -116,7 +138,21 @@ export async function registerUser(input: {
     userAgent: meta.ua,
   });
 
-  return { user: toPublicUser(user), token };
+  const emailDelivery: {
+    sent: boolean;
+    reason?: string;
+    verifyUrl?: string;
+    verifyToken?: string;
+  } = {
+    sent: mail.sent,
+    reason: mail.reason,
+  };
+  if (!mail.sent && mailFallbackExposeEnabled()) {
+    emailDelivery.verifyUrl = verifyUrl;
+    emailDelivery.verifyToken = verifyToken;
+  }
+
+  return { user: toPublicUser(user), token, emailDelivery };
 }
 
 export async function loginUser(input: {
@@ -210,11 +246,18 @@ export async function requireSessionUser(token: string | null) {
   return session;
 }
 
-export async function requestPasswordReset(email: string): Promise<void> {
+export async function requestPasswordReset(
+  email: string,
+): Promise<{
+  emailed: boolean;
+  reason?: string;
+  resetUrl?: string;
+  resetToken?: string;
+}> {
   const emailNormalized = normalizeEmail(email);
   const user = await findUserByNormalizedEmail(emailNormalized);
   // Always succeed to avoid account enumeration
-  if (!user) return;
+  if (!user) return { emailed: true };
 
   const token = createOpaqueToken(24);
   const sql = getSql();
@@ -232,17 +275,34 @@ export async function requestPasswordReset(email: string): Promise<void> {
     metadata: {},
   });
   const resetUrl = `${appPublicUrl()}/annytrade/auth/reset-password?token=${encodeURIComponent(token)}`;
-  await sendTransactionalEmail({
+  const mail = await sendTransactionalEmail({
     to: user.email,
     subject: "Reset your AnnyTrade password",
     text: `Reset your AnnyTrade password:\n${resetUrl}\n\nOr paste this token on the reset page:\n${token}\n\nThis link expires in 1 hour. If you did not request it, ignore this email.`,
   });
+  if (!mail.sent) {
+    await createNotification({
+      userId: user.id,
+      type: "security",
+      title: "Password reset (mail offline)",
+      message: `Email provider offline. Use this reset link if you requested it: ${resetUrl}`,
+    });
+  }
   if (process.env.NODE_ENV !== "production") {
     console.info(
       "[annytrade] password reset token created (dev only; value not logged)",
       { length: token.length },
     );
   }
+  if (!mail.sent && mailFallbackExposeEnabled()) {
+    return {
+      emailed: false,
+      reason: mail.reason,
+      resetUrl,
+      resetToken: token,
+    };
+  }
+  return { emailed: mail.sent, reason: mail.reason };
 }
 
 export async function confirmPasswordReset(input: {
