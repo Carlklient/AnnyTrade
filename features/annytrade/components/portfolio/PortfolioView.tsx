@@ -84,6 +84,66 @@ export function PortfolioView() {
     }
   }
 
+  async function closePartial(symbol: string, maxQty: number) {
+    const raw = window.prompt(
+      `Close how many of ${symbol}? (max ${maxQty})`,
+      String(maxQty),
+    );
+    if (raw == null) return;
+    const qty = Number(raw);
+    if (!Number.isFinite(qty) || qty <= 0 || qty > maxQty + 1e-8) {
+      setError("Enter a valid partial quantity.");
+      return;
+    }
+    await closePosition(symbol, qty);
+  }
+
+  async function amendPending(id: string, limitPrice: number | null) {
+    const raw = window.prompt(
+      "New limit price (leave blank to keep / cancel)",
+      limitPrice != null ? String(limitPrice) : "",
+    );
+    if (raw == null || raw.trim() === "") return;
+    const next = Number(raw);
+    if (!Number.isFinite(next) || next <= 0) {
+      setError("Invalid amend price.");
+      return;
+    }
+    try {
+      await paperTradingClient.amendOrder(id, { limitPrice: next });
+      await refresh();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Amend failed");
+    }
+  }
+
+  function exportCsv() {
+    const lines = [
+      "section,symbol,qty,side,type,status,price,pnl,time",
+      ...open.map(
+        (p) =>
+          `position,${p.symbol},${p.quantity},LONG,,,${p.markPrice ?? ""},${p.unrealizedPnl ?? ""},${p.openedAt}`,
+      ),
+      ...pending.map(
+        (o) =>
+          `order,${o.symbol},${o.quantity},${o.side},${o.orderType},${o.status},${o.limitPrice ?? o.stopPrice ?? ""},,${o.submittedAt}`,
+      ),
+      ...closed.map(
+        (p) =>
+          `closed,${p.symbol},${p.quantity},,,,${p.realizedPnl ?? ""},${p.closedAt ?? ""}`,
+      ),
+    ];
+    const blob = new Blob([lines.join("\n")], {
+      type: "text/csv;charset=utf-8",
+    });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `annytrade-paper-portfolio-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
   const currency = summary?.currency ?? "USD";
   const marksOk = summary?.marksComplete !== false;
   const note =
@@ -112,14 +172,24 @@ export function PortfolioView() {
 
   return (
     <div className="space-y-4">
-      <div>
-        <p className="at-label">PAPER TRADING, Positions</p>
-        <h1
-          className="text-2xl font-semibold"
-          style={{ fontFamily: "var(--at-font-display)" }}
+      <div className="flex flex-wrap items-end justify-between gap-3">
+        <div>
+          <p className="at-label">PAPER TRADING, Positions</p>
+          <h1
+            className="text-2xl font-semibold"
+            style={{ fontFamily: "var(--at-font-display)" }}
+          >
+            Portfolio
+          </h1>
+        </div>
+        <button
+          type="button"
+          className="at-btn at-btn-ghost h-9"
+          onClick={exportCsv}
+          disabled={!summary}
         >
-          Portfolio
-        </h1>
+          Export CSV
+        </button>
       </div>
 
       {error ? (
@@ -313,13 +383,24 @@ export function PortfolioView() {
                     {formatCompactTime(p.openedAt)}
                   </td>
                   <td className="px-3 py-3 text-right">
-                    <button
-                      type="button"
-                      className="at-btn at-btn-ghost h-8"
-                      onClick={() => void closePosition(p.symbol, p.quantity)}
-                    >
-                      Close
-                    </button>
+                    <div className="flex flex-wrap justify-end gap-1">
+                      <button
+                        type="button"
+                        className="at-btn at-btn-ghost h-8"
+                        onClick={() =>
+                          void closePartial(p.symbol, p.quantity)
+                        }
+                      >
+                        Partial
+                      </button>
+                      <button
+                        type="button"
+                        className="at-btn at-btn-ghost h-8"
+                        onClick={() => void closePosition(p.symbol, p.quantity)}
+                      >
+                        Close
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}
@@ -365,13 +446,27 @@ export function PortfolioView() {
                     <span className="at-badge">{o.status}</span>
                   </td>
                   <td className="px-3 py-3 text-right">
-                    <button
-                      type="button"
-                      className="at-btn at-btn-ghost h-8"
-                      onClick={() => void cancel(o.id)}
-                    >
-                      Cancel
-                    </button>
+                    <div className="flex flex-wrap justify-end gap-1">
+                      {(o.orderType === "LIMIT" ||
+                        o.orderType === "STOP_LIMIT") && (
+                        <button
+                          type="button"
+                          className="at-btn at-btn-ghost h-8"
+                          onClick={() =>
+                            void amendPending(o.id, o.limitPrice)
+                          }
+                        >
+                          Amend
+                        </button>
+                      )}
+                      <button
+                        type="button"
+                        className="at-btn at-btn-ghost h-8"
+                        onClick={() => void cancel(o.id)}
+                      >
+                        Cancel
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}

@@ -1,0 +1,25 @@
+{
+  "name": "AnnyTrade",
+  "short_name": "AnnyTrade",
+  "description": "Paper trading desk — simulated markets, charts, and wallet. Not live brokerage.",
+  "start_url": "/annytrade",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#f4f6fb",
+  "theme_color": "#2455f4",
+  "orientation": "any",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/apple-icon",
+      "sizes": "180x180",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}

@@ -13,6 +13,13 @@ export const metadata: Metadata = {
   },
   description:
     "Paper trading desk demo: markets, signals, charts, wallet, and analytics. Simulated data only. Broker Live disabled.",
+  applicationName: "AnnyTrade",
+  manifest: "/manifest.webmanifest",
+  appleWebApp: {
+    capable: true,
+    title: "AnnyTrade",
+    statusBarStyle: "default",
+  },
   robots: {
     index: true,
     follow: true,

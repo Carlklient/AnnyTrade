@@ -80,7 +80,7 @@ function formatTs(iso: string | null): string {
 }
 
 export function TradeView({ symbol }: TradeViewProps) {
-  const { auth } = useAnnyTrade();
+  const { auth, refreshPaperAccount } = useAnnyTrade();
   const sym = symbol.toUpperCase();
   const {
     instrument,
@@ -115,6 +115,23 @@ export function TradeView({ symbol }: TradeViewProps) {
   const [injectDrawing, setInjectDrawing] = useState<ChartDrawing | null>(
     null,
   );
+  const [takeProfit, setTakeProfit] = useState(0);
+  const [stopLoss, setStopLoss] = useState(0);
+  const [timeInForce, setTimeInForce] = useState<"GTC" | "DAY" | "IOC">("GTC");
+  const [sizeUnit, setSizeUnit] = useState<"units" | "lots">("units");
+  const [submitting, setSubmitting] = useState(false);
+  const [message, setMessage] = useState<string | null>(null);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("side") === "SELL") setSide("SELL");
+    if (params.get("side") === "BUY") setSide("BUY");
+    if (params.get("fromSignal") === "1") {
+      setMessage("Signal bias applied — review size/TP/SL before submitting.");
+    }
+  }, [sym]);
 
   useEffect(() => {
     const prefs = loadChartPrefs();
@@ -129,9 +146,6 @@ export function TradeView({ symbol }: TradeViewProps) {
     if (!prefsReady) return;
     saveChartPrefs({ timeframeId: timeframe.id, indicators: indicatorFlags });
   }, [prefsReady, timeframe.id, indicatorFlags]);
-  const [submitting, setSubmitting] = useState(false);
-  const [message, setMessage] = useState<string | null>(null);
-  const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [availableCash, setAvailableCash] = useState<number | null>(null);
   const [paperCurrency, setPaperCurrency] = useState("USD");
   const [positions, setPositions] = useState<PublicPosition[]>([]);
@@ -180,10 +194,11 @@ export function TradeView({ symbol }: TradeViewProps) {
       setPaperCurrency(summary.currency);
       setPositions(summary.positions.filter((p) => p.symbol === sym));
       setOrders(orderRes.orders.filter((o) => o.symbol === sym));
+      await refreshPaperAccount();
     } catch {
       // guest / error
     }
-  }, [auth.authenticated, sym]);
+  }, [auth.authenticated, sym, refreshPaperAccount]);
 
   useEffect(() => {
     void refreshPaper();
@@ -206,6 +221,8 @@ export function TradeView({ symbol }: TradeViewProps) {
       limitPrice?: number | null;
       stopPrice?: number | null;
       quantity?: number;
+      takeProfitPrice?: number | null;
+      stopLossPrice?: number | null;
     },
   ) {
     setSide(nextSide);
@@ -219,8 +236,10 @@ export function TradeView({ symbol }: TradeViewProps) {
       setErrorMsg("Symbol not in Phase 2 market catalog. Cannot paper trade.");
       return;
     }
-    const qty = overrides?.quantity ?? size;
-    if (qty <= 0) {
+    const qtyUnits =
+      overrides?.quantity ??
+      (sizeUnit === "lots" ? Number((size * 100_000).toFixed(4)) : size);
+    if (qtyUnits <= 0) {
       setErrorMsg("Quantity must be positive.");
       return;
     }
@@ -231,6 +250,18 @@ export function TradeView({ symbol }: TradeViewProps) {
         : limitPrice;
     const nextStop =
       overrides && "stopPrice" in overrides ? overrides.stopPrice : stopPrice;
+    const tp =
+      overrides && "takeProfitPrice" in overrides
+        ? overrides.takeProfitPrice
+        : takeProfit > 0
+          ? takeProfit
+          : null;
+    const sl =
+      overrides && "stopLossPrice" in overrides
+        ? overrides.stopLossPrice
+        : stopLoss > 0
+          ? stopLoss
+          : null;
     if (overrides?.orderType) setOrderType(overrides.orderType);
     if (overrides && "limitPrice" in overrides && overrides.limitPrice != null) {
       setLimitPrice(overrides.limitPrice);
@@ -244,7 +275,7 @@ export function TradeView({ symbol }: TradeViewProps) {
         symbol: sym,
         side: nextSide,
         orderType: nextType,
-        quantity: qty,
+        quantity: qtyUnits,
         limitPrice:
           nextType === "LIMIT" || nextType === "STOP_LIMIT"
             ? (nextLimit ?? null)
@@ -253,6 +284,9 @@ export function TradeView({ symbol }: TradeViewProps) {
           nextType === "STOP" || nextType === "STOP_LIMIT"
             ? (nextStop ?? null)
             : null,
+        takeProfitPrice: nextSide === "BUY" ? tp : null,
+        stopLossPrice: nextSide === "BUY" ? sl : null,
+        timeInForce,
         idempotencyKey: newIdempotencyKey(),
       });
       const o = result.order;
@@ -297,6 +331,23 @@ export function TradeView({ symbol }: TradeViewProps) {
     }
     setMessage(`Space · ${idea.title}`);
   }
+
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) {
+      const tag = (e.target as HTMLElement | null)?.tagName;
+      if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") return;
+      if (e.key === "b" || e.key === "B") {
+        e.preventDefault();
+        void submit("BUY", oneClick ? { orderType: "MARKET" } : undefined);
+      }
+      if (e.key === "s" || e.key === "S") {
+        e.preventDefault();
+        void submit("SELL", oneClick ? { orderType: "MARKET" } : undefined);
+      }
+    }
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  });
 
   async function cancelOrder(id: string) {
     try {
@@ -711,14 +762,69 @@ export function TradeView({ symbol }: TradeViewProps) {
                   />
                 ) : null}
 
-                <Field
-                  label="Quantity (shares)"
-                  value={size}
-                  onChange={(v) => {
-                    if (typeof v === "number") setSize(v);
-                  }}
-                  step={1}
-                />
+                <div className="grid grid-cols-2 gap-2">
+                  <Field
+                    label={sizeUnit === "lots" ? "Lots (1 lot = 100k)" : "Units"}
+                    value={size}
+                    onChange={(v) => {
+                      if (typeof v === "number") setSize(v);
+                    }}
+                    step={sizeUnit === "lots" ? 0.01 : 1}
+                  />
+                  <label className="block text-[0.7rem]">
+                    <span className="at-label">Size unit</span>
+                    <select
+                      className="mt-1 h-9 w-full rounded-[8px] border px-2 text-[0.75rem] font-semibold"
+                      style={{
+                        borderColor: "var(--at-border)",
+                        background: "var(--at-bg-elevated)",
+                      }}
+                      value={sizeUnit}
+                      onChange={(e) =>
+                        setSizeUnit(e.target.value as "units" | "lots")
+                      }
+                    >
+                      <option value="units">Units / shares</option>
+                      <option value="lots">Lots (FX-style)</option>
+                    </select>
+                  </label>
+                </div>
+
+                <div className="grid grid-cols-2 gap-2">
+                  <Field
+                    label="Take profit (BUY brackets)"
+                    value={takeProfit}
+                    onChange={(v) => {
+                      if (typeof v === "number") setTakeProfit(v);
+                    }}
+                  />
+                  <Field
+                    label="Stop loss (BUY brackets)"
+                    value={stopLoss}
+                    onChange={(v) => {
+                      if (typeof v === "number") setStopLoss(v);
+                    }}
+                  />
+                </div>
+
+                <label className="block text-[0.7rem]">
+                  <span className="at-label">Time in force</span>
+                  <select
+                    className="mt-1 h-9 w-full rounded-[8px] border px-2 text-[0.75rem] font-semibold"
+                    style={{
+                      borderColor: "var(--at-border)",
+                      background: "var(--at-bg-elevated)",
+                    }}
+                    value={timeInForce}
+                    onChange={(e) =>
+                      setTimeInForce(e.target.value as "GTC" | "DAY" | "IOC")
+                    }
+                  >
+                    <option value="GTC">GTC</option>
+                    <option value="DAY">DAY</option>
+                    <option value="IOC">IOC</option>
+                  </select>
+                </label>
 
                 <div className="grid grid-cols-2 gap-2 text-[0.75rem]">
                   <div
@@ -730,7 +836,15 @@ export function TradeView({ symbol }: TradeViewProps) {
                   >
                     <p className="at-label">Est. value</p>
                     <p className="at-mono mt-1 font-semibold">
-                      {formatMoney(estimatedValue, paperCurrency)}
+                      {formatMoney(
+                        Number(
+                          (
+                            estPrice *
+                            (sizeUnit === "lots" ? size * 100_000 : size)
+                          ).toFixed(2),
+                        ),
+                        paperCurrency,
+                      )}
                     </p>
                   </div>
                   <div
@@ -770,8 +884,8 @@ export function TradeView({ symbol }: TradeViewProps) {
                   </button>
                 </div>
                 <p className="text-[0.65rem] leading-relaxed font-bold text-[#020617]">
-                  Fills use server market data (buyâ†’ask / sellâ†’bid).
-                  Long-only. No margin.
+                  Fills use server market data (buy→ask / sell→bid). Long-only.
+                  No margin. TP/SL brackets attach after BUY fills.
                   {!auth.authenticated ? " Sign in required." : ""}
                 </p>
               </div>

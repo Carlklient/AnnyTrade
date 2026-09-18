@@ -66,6 +66,9 @@ export type SubmitOrderInput = {
   quantity: number;
   limitPrice?: number | null;
   stopPrice?: number | null;
+  takeProfitPrice?: number | null;
+  stopLossPrice?: number | null;
+  timeInForce?: "GTC" | "DAY" | "IOC" | null;
   idempotencyKey?: string | null;
   ipAddress?: string | null;
   userAgent?: string | null;
@@ -800,15 +803,145 @@ export async function submitPaperOrder(
       },
     });
     try {
+      const { createNotification } = await import("../repos/notifications");
+      await createNotification({
+        userId: input.userId,
+        type: "order",
+        title: `PAPER ${finalOrder.side} ${finalOrder.symbol} ${finalOrder.status}`,
+        message: `Filled ${Number(finalOrder.filled_quantity)} @ ${
+          finalOrder.average_fill_price ?? "n/a"
+        }. Simulated fill only.`,
+      });
+    } catch {
+      /* best-effort */
+    }
+    try {
       const { recordPaperEquitySnapshot } =
         await import("../portfolio/service");
       await recordPaperEquitySnapshot(input.userId, account.id);
     } catch {
       // snapshot is best-effort
     }
+
+    // Bracket exits for long-only: after BUY fill, place TP limit + SL stop sells.
+    if (
+      finalOrder.side === "BUY" &&
+      finalOrder.status === "FILLED" &&
+      (input.takeProfitPrice || input.stopLossPrice)
+    ) {
+      const qty = Number(finalOrder.filled_quantity);
+      if (input.takeProfitPrice && qty > 0) {
+        try {
+          await submitPaperOrder({
+            userId: input.userId,
+            accountId: account.id,
+            symbol,
+            side: "SELL",
+            orderType: "LIMIT",
+            quantity: qty,
+            limitPrice: input.takeProfitPrice,
+            idempotencyKey: input.idempotencyKey
+              ? `${input.idempotencyKey}:tp`
+              : `tp-${finalOrder.id}`,
+          });
+        } catch {
+          /* bracket best-effort */
+        }
+      }
+      if (input.stopLossPrice && qty > 0) {
+        try {
+          await submitPaperOrder({
+            userId: input.userId,
+            accountId: account.id,
+            symbol,
+            side: "SELL",
+            orderType: "STOP",
+            quantity: qty,
+            stopPrice: input.stopLossPrice,
+            idempotencyKey: input.idempotencyKey
+              ? `${input.idempotencyKey}:sl`
+              : `sl-${finalOrder.id}`,
+          });
+        } catch {
+          /* bracket best-effort */
+        }
+      }
+    }
   }
 
   return { order: toPublicOrder(finalOrder), replayed: false };
+}
+
+export async function amendPaperOrder(input: {
+  userId: string;
+  orderId: string;
+  limitPrice?: number | null;
+  stopPrice?: number | null;
+  quantity?: number;
+  ipAddress?: string | null;
+  userAgent?: string | null;
+}): Promise<PublicOrder> {
+  const sql = getSql();
+  const order = await sql.begin(async (tx) => {
+    const rows = await tx<DbOrder[]>`
+      SELECT * FROM annytrade.orders
+      WHERE id = ${input.orderId} AND user_id = ${input.userId}
+      FOR UPDATE
+    `;
+    const current = rows[0];
+    if (!current) throw new ApiError(404, "NOT_FOUND", "Order not found");
+    if (!["PENDING", "OPEN", "PARTIALLY_FILLED"].includes(current.status)) {
+      throw new ApiError(409, "NOT_AMENDABLE", "Order cannot be amended");
+    }
+    const nextQty =
+      input.quantity != null ? input.quantity : Number(current.quantity);
+    if (nextQty < Number(current.filled_quantity)) {
+      throw new ApiError(
+        400,
+        "INVALID_QTY",
+        "Quantity cannot be below filled amount",
+      );
+    }
+    const nextLimit =
+      input.limitPrice !== undefined
+        ? input.limitPrice
+        : current.limit_price != null
+          ? Number(current.limit_price)
+          : null;
+    const nextStop =
+      input.stopPrice !== undefined
+        ? input.stopPrice
+        : current.stop_price != null
+          ? Number(current.stop_price)
+          : null;
+    const updated = await tx<DbOrder[]>`
+      UPDATE annytrade.orders SET
+        quantity = ${nextQty},
+        limit_price = ${nextLimit},
+        stop_price = ${nextStop},
+        updated_at = NOW()
+      WHERE id = ${current.id}
+      RETURNING *
+    `;
+    return updated[0]!;
+  });
+
+  await recordAuditEvent({
+    userId: input.userId,
+    eventType: "order.amended",
+    metadata: {
+      orderId: order.id,
+      limitPrice: order.limit_price,
+      stopPrice: order.stop_price,
+      quantity: order.quantity,
+      paper: true,
+    },
+    ipAddress: input.ipAddress,
+    userAgent: input.userAgent,
+  });
+
+  const filled = await tryFillOrder(order.id, input.userId);
+  return toPublicOrder(filled ?? order);
 }
 
 export async function cancelPaperOrder(input: {
@@ -879,6 +1012,19 @@ export async function processOpenOrdersForAccount(
           source: "process",
         },
       });
+      try {
+        const { createNotification } = await import("../repos/notifications");
+        await createNotification({
+          userId,
+          type: "order",
+          title: `PAPER ${after.side} ${after.symbol} ${after.status}`,
+          message: `Resting order filled ${Number(after.filled_quantity)} @ ${
+            after.average_fill_price ?? "n/a"
+          }. Simulated fill only.`,
+        });
+      } catch {
+        /* best-effort */
+      }
     }
   }
   return { processed: open.length, filled };

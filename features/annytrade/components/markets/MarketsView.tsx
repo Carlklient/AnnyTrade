@@ -19,6 +19,8 @@ import {
   type Instrument,
   type Quote,
 } from "../../services/market-client";
+import { watchlistClient } from "../../services/watchlist-client";
+import { useAnnyTrade } from "../../context/AnnyTradeContext";
 
 type Tab =
   | "all"
@@ -36,9 +38,9 @@ const TABS: { id: Tab; label: string; supported: boolean }[] = [
   { id: "equity", label: "Stocks", supported: true },
   { id: "forex", label: "Forex", supported: true },
   { id: "etf", label: "ETFs", supported: true },
-  { id: "crypto", label: "Crypto", supported: false },
-  { id: "indices", label: "Indices", supported: false },
-  { id: "commodities", label: "Commodities", supported: false },
+  { id: "crypto", label: "Crypto", supported: true },
+  { id: "indices", label: "Indices", supported: true },
+  { id: "commodities", label: "Commodities", supported: true },
   { id: "gainers", label: "Gainers", supported: true },
   { id: "losers", label: "Losers", supported: true },
 ];
@@ -48,9 +50,16 @@ const DEFAULT_SYMBOLS = [
   "MSFT",
   "NVDA",
   "TSLA",
+  "AMZN",
   "SPY",
+  "US500",
   "EURUSD",
   "GBPUSD",
+  "USDJPY",
+  "XAUUSD",
+  "XAGUSD",
+  "BTCUSD",
+  "ETHUSD",
 ];
 
 type Row = {
@@ -59,9 +68,11 @@ type Row = {
 };
 
 export function MarketsView() {
+  const { auth } = useAnnyTrade();
   const [tab, setTab] = useState<Tab>("all");
   const [query, setQuery] = useState("");
   const [favorites, setFavorites] = useState<Record<string, boolean>>({});
+  const [favListId, setFavListId] = useState<string | null>(null);
   const [baseInstruments, setBaseInstruments] = useState<Instrument[]>([]);
   const [baseLoading, setBaseLoading] = useState(true);
   const [baseError, setBaseError] = useState<string | null>(null);
@@ -101,6 +112,67 @@ export function MarketsView() {
     };
   }, []);
 
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem("annytrade.markets.favorites.v1");
+      if (raw) setFavorites(JSON.parse(raw) as Record<string, boolean>);
+    } catch {
+      /* ignore */
+    }
+  }, []);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(
+        "annytrade.markets.favorites.v1",
+        JSON.stringify(favorites),
+      );
+    } catch {
+      /* ignore */
+    }
+  }, [favorites]);
+
+  useEffect(() => {
+    if (!auth.authenticated) return;
+    void watchlistClient
+      .ensureFavorites()
+      .then((wl) => {
+        setFavListId(wl.id);
+        const next: Record<string, boolean> = {};
+        for (const symbol of wl.symbols ?? []) {
+          next[symbol] = true;
+        }
+        for (const item of wl.items ?? []) {
+          next[item.symbol] = true;
+        }
+        if (Object.keys(next).length) setFavorites((f) => ({ ...f, ...next }));
+      })
+      .catch(() => null);
+  }, [auth.authenticated]);
+
+  async function toggleFavorite(symbol: string, instrumentId: string) {
+    const next = !favorites[instrumentId] && !favorites[symbol];
+    setFavorites((f) => ({
+      ...f,
+      [instrumentId]: next,
+      [symbol]: next,
+    }));
+    if (!auth.authenticated) return;
+    try {
+      const id =
+        favListId ??
+        (await watchlistClient.ensureFavorites().then((w) => {
+          setFavListId(w.id);
+          return w.id;
+        }));
+      if (!id) return;
+      if (next) await watchlistClient.addItem(id, symbol);
+      else await watchlistClient.removeItem(id, symbol);
+    } catch {
+      /* local state still updated */
+    }
+  }
+
   const activeInstruments = useMemo(() => {
     if (query.trim().length >= 1) return searchHits;
     return baseInstruments;
@@ -125,11 +197,14 @@ export function MarketsView() {
       quote: quoteMap.get(instrument.symbol) ?? null,
     }));
 
-    if (tab === "crypto" || tab === "commodities" || tab === "indices") {
-      return [];
-    }
-    if (tab === "equity" || tab === "forex" || tab === "etf") {
+    if (tab === "equity" || tab === "forex" || tab === "etf" || tab === "crypto") {
       list = list.filter((r) => r.instrument.assetClass === tab);
+    }
+    if (tab === "commodities") {
+      list = list.filter((r) => r.instrument.assetClass === "commodity");
+    }
+    if (tab === "indices") {
+      list = list.filter((r) => r.instrument.assetClass === "index");
     }
     if (tab === "gainers") {
       list = list
@@ -152,8 +227,7 @@ export function MarketsView() {
     return list;
   }, [activeInstruments, quoteMap, tab]);
 
-  const unsupported =
-    tab === "crypto" || tab === "commodities" || tab === "indices";
+  const unsupported = false;
   const loading = baseLoading || (query.trim() ? searchLoading : false);
   const freshness = metaData
     ? freshnessLabel(metaData.meta.freshnessDefault)
@@ -255,7 +329,8 @@ export function MarketsView() {
                   const changePct = num(quote?.changePercent) ?? 0;
                   const high = num(quote?.high);
                   const low = num(quote?.low);
-                  const fav = favorites[instrument.id];
+                  const fav =
+                    favorites[instrument.id] || favorites[instrument.symbol];
                   const spark = quote
                     ? [
                         Number(quote.low ?? quote.last ?? 0),
@@ -275,10 +350,10 @@ export function MarketsView() {
                           type="button"
                           aria-label={fav ? "Remove favorite" : "Add favorite"}
                           onClick={() =>
-                            setFavorites((f) => ({
-                              ...f,
-                              [instrument.id]: !f[instrument.id],
-                            }))
+                            void toggleFavorite(
+                              instrument.symbol,
+                              instrument.id,
+                            )
                           }
                           className="font-bold text-[#020617] hover:text-[var(--at-accent)]"
                         >

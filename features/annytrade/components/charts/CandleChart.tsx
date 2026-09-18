@@ -86,6 +86,7 @@ export function CandleChart({
   const [pendingTradePrice, setPendingTradePrice] = useState<number | null>(
     null,
   );
+  const [fibDraft, setFibDraft] = useState<number | null>(null);
 
   useEffect(() => {
     if (!symbol) {
@@ -317,6 +318,25 @@ export function CandleChart({
       ]);
       setTrendDraft(null);
       setDrawTool("none");
+      return;
+    }
+
+    if (drawTool === "fib") {
+      if (fibDraft == null) {
+        setFibDraft(price);
+        return;
+      }
+      setDrawings((prev) => [
+        ...prev,
+        {
+          id: newDrawingId(),
+          type: "fib",
+          high: Math.max(fibDraft, price),
+          low: Math.min(fibDraft, price),
+        },
+      ]);
+      setFibDraft(null);
+      setDrawTool("none");
     }
   }
 
@@ -361,6 +381,24 @@ export function CandleChart({
         >
           Trend
         </button>
+        <button
+          type="button"
+          className="at-btn at-btn-ghost h-7 px-2 text-[0.65rem]"
+          style={
+            drawTool === "fib"
+              ? { background: "var(--at-accent-muted)", color: "var(--at-accent)" }
+              : undefined
+          }
+          onClick={() => {
+            setTrendDraft(null);
+            setFibDraft(null);
+            setTradeArmed(false);
+            setPendingTradePrice(null);
+            setDrawTool((t) => (t === "fib" ? "none" : "fib"));
+          }}
+        >
+          Fib
+        </button>
         {tradeFromChart ? (
           <button
             type="button"
@@ -401,9 +439,13 @@ export function CandleChart({
           <span className="text-[0.65rem] font-semibold text-[#0f172a]">
             {drawTool === "hline"
               ? "Click chart to place horizontal"
-              : trendDraft
-                ? "Click second point"
-                : "Click first point"}
+              : drawTool === "fib"
+                ? fibDraft == null
+                  ? "Click first fib swing"
+                  : "Click second fib swing"
+                : trendDraft
+                  ? "Click second point"
+                  : "Click first point"}
           </span>
         ) : null}
         {tradeArmed ? (
@@ -896,6 +938,40 @@ export function CandleChart({
                 >
                   {formatPrice(d.price)}
                 </text>
+              </g>
+            );
+          }
+          if (d.type === "fib") {
+            const levels = [0, 0.236, 0.382, 0.5, 0.618, 0.786, 1];
+            const span = d.high - d.low || 1;
+            return (
+              <g key={d.id}>
+                {levels.map((lvl) => {
+                  const price = d.high - span * lvl;
+                  const y = yScale(price);
+                  return (
+                    <g key={`${d.id}-${lvl}`}>
+                      <line
+                        x1={pad.left}
+                        x2={width - pad.right}
+                        y1={y}
+                        y2={y}
+                        stroke="#c4a574"
+                        strokeWidth={1}
+                        opacity={0.85}
+                      />
+                      <text
+                        x={pad.left + 2}
+                        y={y - 2}
+                        fill="#c4a574"
+                        fontSize={8}
+                        fontWeight={700}
+                      >
+                        {(lvl * 100).toFixed(1)}% {formatPrice(price)}
+                      </text>
+                    </g>
+                  );
+                })}
               </g>
             );
           }

@@ -256,10 +256,12 @@ export function SignalDetailView({ id }: { id: string }) {
           </div>
 
           <Link
-            href={annytradeRoutes.trade(signal.symbol)}
+            href={`${annytradeRoutes.trade(signal.symbol)}?side=${
+              signal.bias === "Bearish" ? "SELL" : "BUY"
+            }&fromSignal=1`}
             className="at-btn at-btn-primary w-full justify-center"
           >
-            Open PAPER trade, {signal.symbol}
+            Apply bias to PAPER trade · {signal.symbol}
           </Link>
         </div>
       </div>

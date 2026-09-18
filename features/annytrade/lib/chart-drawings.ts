@@ -7,9 +7,15 @@ export type ChartDrawing =
       price0: number;
       x1: number;
       price1: number;
+    }
+  | {
+      id: string;
+      type: "fib";
+      high: number;
+      low: number;
     };
 
-export type ChartDrawTool = "none" | "hline" | "trend";
+export type ChartDrawTool = "none" | "hline" | "trend" | "fib";
 
 const PREFIX = "annytrade.chart.drawings.v1:";
 

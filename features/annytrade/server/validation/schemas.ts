@@ -114,6 +114,21 @@ export const orderCreateSchema = z
       .nullable()
       .optional(),
     idempotencyKey: z.string().trim().min(8).max(128).optional(),
+    takeProfitPrice: z
+      .number()
+      .finite()
+      .positive()
+      .max(1_000_000_000)
+      .nullable()
+      .optional(),
+    stopLossPrice: z
+      .number()
+      .finite()
+      .positive()
+      .max(1_000_000_000)
+      .nullable()
+      .optional(),
+    timeInForce: z.enum(["GTC", "DAY", "IOC"]).optional(),
   })
   .superRefine((v, ctx) => {
     if (
@@ -149,7 +164,45 @@ export const orderCreateSchema = z
         });
       }
     }
+    if (
+      v.takeProfitPrice != null &&
+      v.stopLossPrice != null &&
+      v.side === "BUY" &&
+      v.takeProfitPrice <= v.stopLossPrice
+    ) {
+      ctx.addIssue({
+        code: "custom",
+        message: "takeProfitPrice should be above stopLossPrice for BUY",
+        path: ["takeProfitPrice"],
+      });
+    }
   });
+
+export const orderAmendSchema = z
+  .object({
+    limitPrice: z
+      .number()
+      .finite()
+      .positive()
+      .max(1_000_000_000)
+      .nullable()
+      .optional(),
+    stopPrice: z
+      .number()
+      .finite()
+      .positive()
+      .max(1_000_000_000)
+      .nullable()
+      .optional(),
+    quantity: z.number().finite().positive().max(1_000_000).optional(),
+  })
+  .refine(
+    (v) =>
+      v.limitPrice !== undefined ||
+      v.stopPrice !== undefined ||
+      v.quantity !== undefined,
+    { message: "Provide limitPrice, stopPrice, or quantity" },
+  );
 
 export function normalizeEmail(email: string): string {
   return email.trim().toLowerCase();

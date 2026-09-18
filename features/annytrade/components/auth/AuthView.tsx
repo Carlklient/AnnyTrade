@@ -321,6 +321,10 @@ export function AuthView({ variant }: { variant: AuthVariant }) {
             ) : null}
             {variant === "onboarding" ? (
               <>
+                <p className="text-[0.8rem] font-bold leading-relaxed" style={LABEL}>
+                  Quick coach: size small on PAPER, mark invalidation with H-Line
+                  or Fib, then place the order. Live money stays hard-blocked.
+                </p>
                 <select
                   className="at-input"
                   name="defaultMarket"
@@ -344,6 +348,24 @@ export function AuthView({ variant }: { variant: AuthVariant }) {
                   <option value="EUR">Account currency , EUR</option>
                   <option value="GBP">Account currency , GBP</option>
                 </select>
+                <select
+                  className="at-input"
+                  name="experience"
+                  defaultValue="beginner"
+                >
+                  <option value="beginner">Experience · Beginner</option>
+                  <option value="intermediate">Experience · Intermediate</option>
+                  <option value="advanced">Experience · Advanced</option>
+                </select>
+                <select
+                  className="at-input"
+                  name="riskPreference"
+                  defaultValue="balanced"
+                >
+                  <option value="conservative">Risk · Conservative</option>
+                  <option value="balanced">Risk · Balanced</option>
+                  <option value="aggressive">Risk · Aggressive</option>
+                </select>
               </>
             ) : null}
 
@@ -365,7 +387,9 @@ export function AuthView({ variant }: { variant: AuthVariant }) {
             ) : (
               <Link href={annytradeRoutes.auth.login}>Back to sign in</Link>
             )}
-            <Link href={annytradeRoutes.dashboard}>Continue as guest demo</Link>
+            <Link href={annytradeRoutes.dashboard}>
+              Browse desk without signing in (guest chrome)
+            </Link>
             <Link href="/work/annytrade">← Portfolio case study</Link>
           </div>
         </div>

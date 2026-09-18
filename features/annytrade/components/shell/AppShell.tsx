@@ -3,6 +3,7 @@
 import type { ReactNode } from "react";
 import { usePathname } from "next/navigation";
 
+import { useAnnyTrade } from "../../context/AnnyTradeContext";
 import { MobileNav } from "./MobileNav";
 import { DeskTopNav } from "./DeskTopNav";
 import { TradingTopMetrics } from "./TradingTopMetrics";
@@ -10,12 +11,18 @@ import "../../styles/desk.css";
 
 export function AppShell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
+  const { theme } = useAnnyTrade();
   const isTerminal = pathname.startsWith("/annytrade/trade");
+  const deskTheme = isTerminal
+    ? "terminal"
+    : theme === "dark"
+      ? "dark"
+      : "light";
 
   return (
     <div
       data-annytrade
-      data-at-theme={isTerminal ? "terminal" : "light"}
+      data-at-theme={deskTheme}
       data-at-desk={isTerminal ? "terminal" : "octa"}
       className="at-shell"
     >

@@ -68,16 +68,16 @@ const EDGE = [
 
 const GROW = [
   {
-    title: "Community of traders",
-    body: "Share the same desk language, signals, watchlists, and portfolio views.",
+    title: "Shared desk language",
+    body: "Signals, watchlists, and portfolio views stay consistent across the paper workspace.",
   },
   {
     title: "Daily market analysis",
     body: "Rule based signals and chart context without leaving the platform.",
   },
   {
-    title: "Educational materials",
-    body: "Risk disclosures and product notes keep expectations clear and honest.",
+    title: "Clear product notes",
+    body: "Risk disclosures keep expectations honest — PAPER only, no live brokerage.",
   },
   {
     title: "Trading tools",

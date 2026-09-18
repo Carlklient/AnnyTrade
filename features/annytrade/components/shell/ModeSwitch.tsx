@@ -4,11 +4,12 @@ import Link from "next/link";
 
 import { useAnnyTrade } from "../../context/AnnyTradeContext";
 import { cnAt, formatMoney } from "../../lib/format";
+import { annytradeRoutes } from "../../lib/routes";
 import type { AccountMode } from "../../types";
 
 const MODE_LABEL: Record<AccountMode, { full: string; short: string }> = {
-  demo: { full: "Paper", short: "Paper" },
-  live: { full: "Preview UI", short: "Preview" },
+  demo: { full: "Paper ledger", short: "Paper" },
+  live: { full: "UI preview only", short: "Preview" },
 };
 
 export function ModeSwitch() {
@@ -22,7 +23,8 @@ export function ModeSwitch() {
         background: "var(--at-bg-elevated)",
       }}
       role="group"
-      aria-label="Desk mode"
+      aria-label="Desk display mode (does not change paper ledger)"
+      title="Paper ledger is always used for orders. Preview only changes chrome."
     >
       {(["demo", "live"] as const).map((m) => {
         const active = mode === m;
@@ -78,45 +80,28 @@ export function ModeBanner() {
       >
         <span>
           <strong className="text-[var(--at-text)]">Paper desk</strong>:
-          practice funds and market data only (
-          {formatMoney(account.balance, account.currency)}). No real-money
-          execution.
+          simulated fills only. Equity{" "}
+          <span className="at-mono font-semibold">
+            {formatMoney(account.equity, account.currency)}
+          </span>
+          . Live brokerage stays hard-blocked.
         </span>
-        <div className="flex flex-wrap items-center gap-2">
-          <span className="at-badge at-badge-demo">PAPER</span>
-          <Link
-            href="/work/annytrade"
-            className="text-[0.7rem] font-medium text-[var(--at-accent)] hover:underline lg:hidden"
-          >
-            Case study
-          </Link>
-        </div>
+        <Link href={annytradeRoutes.wallet} className="font-bold underline">
+          Paper wallet
+        </Link>
       </div>
     );
   }
   return (
     <div
-      className="mb-3 flex flex-wrap items-center justify-between gap-2 rounded-[8px] border px-3 py-2 text-[0.75rem]"
+      className="mb-3 rounded-[8px] border px-3 py-2 text-[0.75rem]"
       style={{
-        borderColor: "color-mix(in srgb, var(--at-live) 40%, var(--at-border))",
-        background: "var(--at-sell-muted)",
-        color: "var(--at-text-secondary)",
+        borderColor: "color-mix(in srgb, var(--at-live) 35%, var(--at-border))",
+        background: "color-mix(in srgb, var(--at-live) 10%, transparent)",
       }}
     >
-      <span>
-        <strong className="text-[var(--at-text)]">Preview UI only</strong>:
-        layout posture for product demos. Does not switch execution. Trading
-        stays on the internal paper ledger (or broker sandbox if connected).
-      </span>
-      <div className="flex flex-wrap items-center gap-2">
-        <span className="at-badge at-badge-live">Preview UI</span>
-        <Link
-          href="/work/annytrade"
-          className="text-[0.7rem] font-medium text-[var(--at-accent)] hover:underline lg:hidden"
-        >
-          Case study
-        </Link>
-      </div>
+      <strong>UI preview</strong> — chrome only. Orders still hit the PAPER
+      ledger. No live money path.
     </div>
   );
 }

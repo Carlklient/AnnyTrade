@@ -14,6 +14,9 @@ export type SubmitPaperOrderInput = {
   quantity: number;
   limitPrice?: number | null;
   stopPrice?: number | null;
+  takeProfitPrice?: number | null;
+  stopLossPrice?: number | null;
+  timeInForce?: "GTC" | "DAY" | "IOC";
   idempotencyKey?: string;
 };
 
@@ -75,6 +78,20 @@ export const paperTradingClient = {
       `/orders/${id}/cancel`,
       { method: "POST", body: JSON.stringify({}) },
     );
+  },
+
+  amendOrder(
+    id: string,
+    body: {
+      limitPrice?: number | null;
+      stopPrice?: number | null;
+      quantity?: number;
+    },
+  ) {
+    return annytradeFetch<{ order: PublicOrder; paper: true }>(`/orders/${id}`, {
+      method: "PATCH",
+      body: JSON.stringify(body),
+    });
   },
 
   processOrders(accountId?: string) {

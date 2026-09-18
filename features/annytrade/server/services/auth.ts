@@ -34,6 +34,7 @@ import {
   type PublicUser,
 } from "../domain/types";
 import { normalizeEmail } from "../validation/schemas";
+import { appPublicUrl, sendTransactionalEmail } from "../mail/send";
 
 function clientMeta(request?: NextRequest) {
   if (!request) return { ip: null as string | null, ua: null as string | null };
@@ -71,7 +72,7 @@ export async function registerUser(input: {
     initialBalance: 100_000,
   });
   const watchlist = await createWatchlist(user.id, "Favorites");
-  for (const symbol of ["EURUSD", "XAUUSD", "US500", "BTCUSD"]) {
+  for (const symbol of ["EURUSD", "GBPUSD", "AAPL", "SPY", "XAUUSD", "BTCUSD"]) {
     await addWatchlistItem(user.id, watchlist.id, symbol);
   }
   await createNotification({
@@ -79,10 +80,9 @@ export async function registerUser(input: {
     type: "security",
     title: "Welcome to AnnyTrade",
     message:
-      "Your paper trading account is ready. Market prices remain simulated until Phase 2.",
+      "Your PAPER trading account is ready. Quotes may be DEMO or a live vendor feed — never real brokerage money.",
   });
 
-  // Email verification foundation token (not emailed in Phase 1 unless Resend configured)
   const verifyToken = createOpaqueToken(24);
   const sql = getSql();
   await sql`
@@ -93,6 +93,13 @@ export async function registerUser(input: {
       ${new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)}
     )
   `;
+
+  const verifyUrl = `${appPublicUrl()}/annytrade/auth/verify?token=${encodeURIComponent(verifyToken)}`;
+  await sendTransactionalEmail({
+    to: user.email,
+    subject: "Verify your AnnyTrade email",
+    text: `Welcome to AnnyTrade.\n\nVerify your email:\n${verifyUrl}\n\nOr paste this token on the verify page:\n${verifyToken}\n\nPAPER trading only — no live money.`,
+  });
 
   const meta = clientMeta(input.request);
   await recordAuditEvent({
@@ -224,8 +231,12 @@ export async function requestPasswordReset(email: string): Promise<void> {
     eventType: "auth.password_reset_requested",
     metadata: {},
   });
-  // Phase 1 foundation: token is created; email delivery comes when Resend is wired.
-  // Never log reset tokens in production. Dev logs are redacted length-only.
+  const resetUrl = `${appPublicUrl()}/annytrade/auth/reset-password?token=${encodeURIComponent(token)}`;
+  await sendTransactionalEmail({
+    to: user.email,
+    subject: "Reset your AnnyTrade password",
+    text: `Reset your AnnyTrade password:\n${resetUrl}\n\nOr paste this token on the reset page:\n${token}\n\nThis link expires in 1 hour. If you did not request it, ignore this email.`,
+  });
   if (process.env.NODE_ENV !== "production") {
     console.info(
       "[annytrade] password reset token created (dev only; value not logged)",

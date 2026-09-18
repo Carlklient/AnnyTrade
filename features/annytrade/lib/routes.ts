@@ -69,6 +69,8 @@ export const mobileNav: NavItem[] = [
     icon: "LineChart",
     match: "prefix",
   },
+  { href: annytradeRoutes.signals, label: "Signals", icon: "Radar" },
   { href: annytradeRoutes.portfolio, label: "Positions", icon: "Briefcase" },
+  { href: annytradeRoutes.news, label: "News", icon: "Newspaper" },
   { href: annytradeRoutes.wallet, label: "Wallet", icon: "Wallet" },
 ];

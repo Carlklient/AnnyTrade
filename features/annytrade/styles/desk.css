@@ -28,6 +28,41 @@
   --at-topbar-h: 60px;
 }
 
+[data-annytrade][data-at-theme="dark"] {
+  --at-bg: #0b1220;
+  --at-bg-elevated: #111827;
+  --at-surface: #111827;
+  --at-surface-2: #1a2336;
+  --at-surface-3: #243049;
+  --at-border: #2a364d;
+  --at-border-strong: #64748b;
+  --at-text: #f8fafc;
+  --at-text-secondary: #e2e8f0;
+  --at-text-muted: #cbd5e1;
+  --at-accent: #5b8cff;
+  --at-accent-hover: #7aa2ff;
+  --at-accent-muted: color-mix(in srgb, #5b8cff 18%, transparent);
+  --at-buy: #22c55e;
+  --at-buy-muted: color-mix(in srgb, #22c55e 16%, transparent);
+  --at-sell: #f87171;
+  --at-sell-muted: color-mix(in srgb, #f87171 16%, transparent);
+  --at-demo: #5b8cff;
+  --at-live: #f87171;
+  --at-shadow:
+    0 1px 2px color-mix(in srgb, #000 35%, transparent),
+    0 8px 24px color-mix(in srgb, #000 35%, transparent);
+  --at-radius: 16px;
+  --at-radius-sm: 10px;
+  --at-radius-lg: 20px;
+  --at-topbar-h: 60px;
+}
+
+[data-annytrade][data-at-theme="dark"] .at-content,
+[data-annytrade][data-at-theme="dark"] .font-bold.text-\[\#020617\],
+[data-annytrade][data-at-theme="dark"] .text-\[\#020617\] {
+  color: var(--at-text) !important;
+}
+
 /* Desk copy: no washed-out grey — bold near-black */
 [data-annytrade][data-at-desk="octa"] .at-content {
   color: var(--at-text);

@@ -13,8 +13,18 @@ import type { PublicAccount, PublicWatchlist } from "../../types/backend";
 import { WatchlistQuotesPanel } from "./WatchlistQuotesPanel";
 
 export function AccountView() {
-  const { user, account, mode, auth, authLoading, logout, refreshAuth } =
-    useAnnyTrade();
+  const {
+    user,
+    account,
+    mode,
+    auth,
+    authLoading,
+    logout,
+    refreshAuth,
+    setActiveAccountId,
+    activeAccountId,
+    refreshPaperAccount,
+  } = useAnnyTrade();
   const [draftName, setDraftName] = useState(user.name);
   const [draftTimezone, setDraftTimezone] = useState("UTC");
   const [draftPrefs, setDraftPrefs] = useState({
@@ -262,18 +272,74 @@ export function AccountView() {
             {accounts.map((a) => (
               <li
                 key={a.id}
-                className="flex items-center justify-between border-b pb-2 last:border-0"
+                className="flex flex-wrap items-center justify-between gap-2 border-b pb-2 last:border-0"
                 style={{ borderColor: "var(--at-border)" }}
               >
                 <span>
                   {a.label}, {a.accountType}
+                  {activeAccountId === a.id ? " · active" : ""}
                 </span>
-                <span className="at-mono">
-                  {a.ledgerBalance.toLocaleString()} {a.baseCurrency}
+                <span className="flex items-center gap-2">
+                  <span className="at-mono">
+                    {a.ledgerBalance.toLocaleString()} {a.baseCurrency}
+                  </span>
+                  <button
+                    type="button"
+                    className="at-btn at-btn-ghost h-8"
+                    disabled={activeAccountId === a.id}
+                    onClick={() => {
+                      setActiveAccountId(a.id);
+                      void refreshPaperAccount();
+                    }}
+                  >
+                    Use
+                  </button>
                 </span>
               </li>
             ))}
           </ul>
+        </section>
+
+        <section className="at-card">
+          <div className="at-card-header">
+            <h2 className="text-sm font-semibold">Sessions &amp; alerts</h2>
+          </div>
+          <div className="at-card-body space-y-2 text-[0.8125rem]">
+            <p className="font-semibold">
+              Revoke all other sessions by changing your password via reset, or
+              sign out below.
+            </p>
+            <button
+              type="button"
+              className="at-btn at-btn-ghost h-9"
+              onClick={() => {
+                void import("../../lib/notify-client").then((m) =>
+                  m.ensureBrowserNotifications().then((ok) =>
+                    setMessage(
+                      ok
+                        ? "Browser notifications enabled"
+                        : "Browser notifications unavailable",
+                    ),
+                  ),
+                );
+              }}
+            >
+              Enable browser push
+            </button>
+            <button
+              type="button"
+              className="at-btn at-btn-ghost h-9"
+              onClick={() => void logout()}
+            >
+              Sign out this session
+            </button>
+            <Link
+              href={annytradeRoutes.auth.forgot}
+              className="at-btn at-btn-ghost h-9"
+            >
+              Change password (reset email)
+            </Link>
+          </div>
         </section>
 
         <section className="at-card lg:col-span-2">

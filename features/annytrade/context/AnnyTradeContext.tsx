@@ -12,8 +12,21 @@ import {
 
 import { annytradeApi } from "../services/api";
 import { annytradeFetch } from "../services/client";
+import { paperTradingClient } from "../services/paper-client";
 import type { AccountMode, TradingAccount, User } from "../types";
-import type { PublicProfile, PublicUser } from "../types/backend";
+import type {
+  PaperAccountSummary,
+  PublicProfile,
+  PublicUser,
+} from "../types/backend";
+import { PaperJobTicker } from "../components/shell/PaperJobTicker";
+import { PwaRegister } from "../components/shell/PwaRegister";
+import { DeskTour } from "../components/shell/DeskTour";
+import { WebVitalsReporter } from "../components/shell/WebVitalsReporter";
+import {
+  playDeskChime,
+  pushBrowserNotification,
+} from "../lib/notify-client";
 
 type AuthState = {
   authenticated: boolean;
@@ -28,6 +41,10 @@ type AnnyTradeContextValue = {
   toggleTheme: () => void;
   user: User;
   account: TradingAccount;
+  paperSummary: PaperAccountSummary | null;
+  activeAccountId: string | null;
+  setActiveAccountId: (id: string | null) => void;
+  refreshPaperAccount: () => Promise<void>;
   unreadNotifications: number;
   auth: AuthState;
   authLoading: boolean;
@@ -57,6 +74,42 @@ function mapBackendUser(
   };
 }
 
+function summaryToAccount(
+  summary: PaperAccountSummary | null,
+  mode: AccountMode,
+  fallback: TradingAccount,
+): TradingAccount {
+  if (!summary) {
+    return {
+      ...fallback,
+      mode: "demo",
+      balance: 0,
+      available: 0,
+      equity: 0,
+      unrealizedPnl: 0,
+      dailyPnl: 0,
+      marginUsed: 0,
+      freeMargin: 0,
+      leverage: 1,
+    };
+  }
+  // Cash long-only: reserved notional is buying-power lock, not CFD margin.
+  const reserved = summary.reserved ?? 0;
+  return {
+    id: summary.accountId,
+    mode: mode === "live" ? "live" : "demo",
+    currency: summary.currency || "USD",
+    leverage: 1,
+    balance: summary.cashBalance,
+    available: summary.availableCash,
+    equity: summary.equity ?? summary.cashBalance + summary.unrealizedPnl,
+    unrealizedPnl: summary.unrealizedPnl,
+    dailyPnl: summary.dailyPnl ?? 0,
+    marginUsed: reserved,
+    freeMargin: summary.availableCash,
+  };
+}
+
 export function AnnyTradeProvider({ children }: { children: ReactNode }) {
   const [mode, setModeState] = useState<AccountMode>("demo");
   const [theme, setTheme] = useState<"dark" | "light">("light");
@@ -67,6 +120,26 @@ export function AnnyTradeProvider({ children }: { children: ReactNode }) {
     profile: null,
   });
   const [unreadNotifications, setUnread] = useState(0);
+  const [paperSummary, setPaperSummary] = useState<PaperAccountSummary | null>(
+    null,
+  );
+  const [activeAccountId, setActiveAccountId] = useState<string | null>(null);
+
+  const refreshPaperAccount = useCallback(async () => {
+    if (!auth.authenticated) {
+      setPaperSummary(null);
+      return;
+    }
+    try {
+      const summary = await paperTradingClient.summary(
+        activeAccountId ?? undefined,
+      );
+      setPaperSummary(summary);
+      if (!activeAccountId) setActiveAccountId(summary.accountId);
+    } catch {
+      setPaperSummary(null);
+    }
+  }, [auth.authenticated, activeAccountId]);
 
   const refreshAuth = useCallback(async () => {
     try {
@@ -95,20 +168,24 @@ export function AnnyTradeProvider({ children }: { children: ReactNode }) {
         setUnread(
           annytradeApi.listNotifications().filter((n) => !n.read).length,
         );
+        setPaperSummary(null);
       }
     } catch {
       setAuth({ authenticated: false, backendUser: null, profile: null });
       setUnread(annytradeApi.listNotifications().filter((n) => !n.read).length);
+      setPaperSummary(null);
     } finally {
       setAuthLoading(false);
     }
   }, []);
 
   useEffect(() => {
-    // Session hydration from HTTP-only cookie
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- auth bootstrap
     void refreshAuth();
   }, [refreshAuth]);
+
+  useEffect(() => {
+    void refreshPaperAccount();
+  }, [refreshPaperAccount]);
 
   useEffect(() => {
     if (!auth.authenticated) return;
@@ -120,34 +197,63 @@ export function AnnyTradeProvider({ children }: { children: ReactNode }) {
         const data = JSON.parse((ev as MessageEvent).data) as {
           unread?: number;
         };
-        if (typeof data.unread === "number") setUnread(data.unread);
+        if (typeof data.unread === "number") {
+          setUnread((prev) => {
+            if (data.unread! > prev) {
+              playDeskChime();
+              pushBrowserNotification(
+                "AnnyTrade",
+                "You have new desk notifications",
+              );
+            }
+            return data.unread!;
+          });
+        }
       } catch {
         /* ignore */
       }
     });
     es.onerror = () => {
-      // Browser will retry; fall back unread stays last known
+      /* Browser will retry */
     };
     return () => es.close();
   }, [auth.authenticated]);
 
   const setMode = useCallback((next: AccountMode) => {
+    // Live mode is UI preview only — paper ledger never switches.
     setModeState(next);
   }, []);
 
   const toggleTheme = useCallback(() => {
-    setTheme((t) => (t === "dark" ? "light" : "dark"));
+    setTheme((t) => {
+      const next = t === "dark" ? "light" : "dark";
+      if (typeof document !== "undefined") {
+        document.documentElement.dataset.atTheme = next;
+      }
+      return next;
+    });
   }, []);
+
+  useEffect(() => {
+    document.documentElement.dataset.atTheme = theme;
+  }, [theme]);
 
   const logout = useCallback(async () => {
     try {
       await annytradeFetch("/auth/logout", { method: "POST", body: "{}" });
     } finally {
+      setActiveAccountId(null);
+      setPaperSummary(null);
       await refreshAuth();
     }
   }, [refreshAuth]);
 
-  const mockAccount = annytradeApi.getAccount(mode);
+  const mockFallback = annytradeApi.getAccount("demo");
+  const account = summaryToAccount(
+    auth.authenticated ? paperSummary : null,
+    mode,
+    mockFallback,
+  );
   const user = mapBackendUser(auth.backendUser, auth.profile);
 
   const value = useMemo(
@@ -157,7 +263,11 @@ export function AnnyTradeProvider({ children }: { children: ReactNode }) {
       theme,
       toggleTheme,
       user,
-      account: mockAccount,
+      account,
+      paperSummary,
+      activeAccountId,
+      setActiveAccountId,
+      refreshPaperAccount,
       unreadNotifications,
       auth,
       authLoading,
@@ -170,7 +280,10 @@ export function AnnyTradeProvider({ children }: { children: ReactNode }) {
       theme,
       toggleTheme,
       user,
-      mockAccount,
+      account,
+      paperSummary,
+      activeAccountId,
+      refreshPaperAccount,
       unreadNotifications,
       auth,
       authLoading,
@@ -181,6 +294,10 @@ export function AnnyTradeProvider({ children }: { children: ReactNode }) {
 
   return (
     <AnnyTradeContext.Provider value={value}>
+      <PwaRegister />
+      <PaperJobTicker />
+      <DeskTour />
+      <WebVitalsReporter />
       {children}
     </AnnyTradeContext.Provider>
   );
