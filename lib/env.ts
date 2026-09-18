@@ -23,6 +23,7 @@ export const env = {
   },
   resend: {
     apiKey: read("RESEND_API_KEY"),
+    /** Optional. Defaults to onboarding@resend.dev when only the API key is set. */
     fromEmail: read("RESEND_FROM_EMAIL"),
   },
   vercel: {

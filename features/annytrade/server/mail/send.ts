@@ -1,5 +1,13 @@
 import { env } from "@/lib/env";
 
+const RESEND_ONBOARDING_FROM = "AnnyTrade <onboarding@resend.dev>";
+
+export function resolveResendFrom(): string | null {
+  if (!env.resend.apiKey) return null;
+  const from = env.resend.fromEmail?.trim();
+  return from && from.length > 0 ? from : RESEND_ONBOARDING_FROM;
+}
+
 export async function sendTransactionalEmail(input: {
   to: string;
   subject: string;
@@ -7,7 +15,7 @@ export async function sendTransactionalEmail(input: {
   html?: string;
 }): Promise<{ sent: boolean; reason?: string }> {
   const apiKey = env.resend.apiKey;
-  const from = env.resend.fromEmail;
+  const from = resolveResendFrom();
   if (!apiKey || !from) {
     console.info("[annytrade] email skipped (Resend not configured)", {
       to: input.to,
@@ -56,5 +64,5 @@ export function mailFallbackExposeEnabled(): boolean {
 }
 
 export function resendConfigured(): boolean {
-  return Boolean(env.resend.apiKey && env.resend.fromEmail);
+  return Boolean(env.resend.apiKey);
 }

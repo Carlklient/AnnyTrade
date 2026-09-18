@@ -25,28 +25,27 @@ const COPY: Record<
   register: {
     title: "Create account",
     subtitle:
-      "Creates a real account with a PAPER trading ledger. Markets stay simulated.",
+      "Creates a PAPER trading ledger. We email a verification link after signup.",
     cta: "Create account",
     next: annytradeRoutes.auth.onboarding,
   },
   forgot: {
     title: "Forgot password",
     subtitle:
-      "Request a password reset. Email delivery is foundation-only in Phase 1.",
-    cta: "Send reset link",
+      "Enter your email and we will send a password-reset link if an account exists.",
+    cta: "Send reset email",
     next: annytradeRoutes.auth.reset,
   },
   reset: {
     title: "Reset password",
     subtitle:
-      "Paste the reset token from your email (or local server log in development).",
+      "Paste the reset token from your email (or use the link we sent), then choose a new password.",
     cta: "Update password",
     next: annytradeRoutes.auth.login,
   },
   verify: {
     title: "Verify email",
-    subtitle:
-      "Paste the email verification token from development logs / email.",
+    subtitle: "Paste the verification token from your signup email.",
     cta: "Verify",
     next: annytradeRoutes.auth.onboarding,
   },
@@ -123,6 +122,9 @@ export function AuthView({ variant }: { variant: AuthVariant }) {
             return;
           }
         }
+        setInfo(
+          "Account created. Check your email for a verification link, then continue setup.",
+        );
         router.push(copy.next ?? annytradeRoutes.dashboard);
         return;
       }
@@ -146,7 +148,9 @@ export function AuthView({ variant }: { variant: AuthVariant }) {
           setInfo(`Email offline — use this reset link: ${link}`);
           return;
         }
-        setInfo("If that email exists, a reset token was issued.");
+        setInfo(
+          "If that email exists, a reset link was sent. Check your inbox.",
+        );
         return;
       }
 

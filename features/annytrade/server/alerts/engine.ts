@@ -9,6 +9,7 @@ import { getProfile } from "../repos/profiles";
 import { findUserById } from "../repos/users";
 import { marketDataService } from "../market/service";
 import { referenceLast } from "../trading/pricing";
+import { resolveResendFrom } from "../mail/send";
 import { env } from "@/lib/env";
 
 export type AlertEvalResult = {
@@ -60,7 +61,7 @@ async function maybeSendEmail(input: {
 }): Promise<boolean> {
   if (!input.enabled) return false;
   const apiKey = env.resend.apiKey;
-  const from = env.resend.fromEmail;
+  const from = resolveResendFrom();
   if (!apiKey || !from) return false;
   try {
     const res = await fetch("https://api.resend.com/emails", {
