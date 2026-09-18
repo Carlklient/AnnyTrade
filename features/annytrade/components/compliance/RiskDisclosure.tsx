@@ -7,7 +7,7 @@
 export function RiskDisclosure({ compact = false }: { compact?: boolean }) {
   if (compact) {
     return (
-      <p className="text-[0.7rem] font-bold text-[#020617]">
+      <p className="text-[0.7rem] font-bold text-[var(--at-text)]">
         Educational only, not investment advice. Trading involves risk of loss.
         Signals do not guarantee outcomes. No SEC/FCA/FINRA approval is claimed.
       </p>
@@ -16,7 +16,7 @@ export function RiskDisclosure({ compact = false }: { compact?: boolean }) {
 
   return (
     <aside
-      className="rounded-[8px] border px-3 py-2 text-[0.75rem] font-bold text-[#020617]"
+      className="rounded-[8px] border px-3 py-2 text-[0.75rem] font-bold text-[var(--at-text)]"
       style={{
         borderColor: "var(--at-border)",
         background: "var(--at-bg-elevated)",

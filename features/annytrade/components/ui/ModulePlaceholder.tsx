@@ -28,11 +28,11 @@ export function ModulePlaceholder({
         <span className="at-badge">Next</span>
       </div>
       <div className="at-card-body space-y-4">
-        <p className="text-[0.875rem] leading-relaxed font-bold text-[#020617]">
+        <p className="text-[0.875rem] leading-relaxed font-bold text-[var(--at-text)]">
           {description}
         </p>
         {bullets.length > 0 ? (
-          <ul className="space-y-2 text-[0.8125rem] font-bold text-[#020617]">
+          <ul className="space-y-2 text-[0.8125rem] font-bold text-[var(--at-text)]">
             {bullets.map((b) => (
               <li key={b} className="flex gap-2">
                 <span style={{ color: "var(--at-accent)" }}>â, ¸</span>
@@ -67,7 +67,7 @@ export function EmptyState({
   return (
     <div className="flex flex-col items-center justify-center px-4 py-12 text-center">
       <p className="text-[0.9375rem] font-semibold">{title}</p>
-      <p className="mt-1 max-w-sm text-[0.8125rem] font-bold text-[#020617]">
+      <p className="mt-1 max-w-sm text-[0.8125rem] font-bold text-[var(--at-text)]">
         {description}
       </p>
     </div>

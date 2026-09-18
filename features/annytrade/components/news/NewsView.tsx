@@ -56,7 +56,7 @@ export function NewsView({ symbolFilter }: { symbolFilter?: string }) {
           >
             Market news
           </h1>
-          <p className="mt-2 text-[0.8125rem] font-bold text-[#020617]">
+          <p className="mt-2 text-[0.8125rem] font-bold text-[var(--at-text)]">
             Provider-backed headlines with links to original sources. Full
             articles are not republished here.
           </p>
@@ -100,7 +100,7 @@ export function NewsView({ symbolFilter }: { symbolFilter?: string }) {
         <p className="text-[0.8125rem] text-[var(--at-sell)]">{error}</p>
       ) : null}
       {loading ? (
-        <p className="text-[0.8125rem] font-bold text-[#020617]">Loading…</p>
+        <p className="text-[0.8125rem] font-bold text-[var(--at-text)]">Loading…</p>
       ) : null}
 
       <div className="space-y-3">
@@ -135,11 +135,11 @@ export function NewsView({ symbolFilter }: { symbolFilter?: string }) {
                 </a>
               </h2>
               {n.summary ? (
-                <p className="text-[0.8125rem] font-bold text-[#020617]">
+                <p className="text-[0.8125rem] font-bold text-[var(--at-text)]">
                   {n.summary}
                 </p>
               ) : null}
-              <p className="text-[0.7rem] font-bold text-[#020617]">
+              <p className="text-[0.7rem] font-bold text-[var(--at-text)]">
                 {n.source}, {formatCompactTime(n.publishedAt)}{" "}
                 <a
                   href={n.url}
@@ -156,13 +156,13 @@ export function NewsView({ symbolFilter }: { symbolFilter?: string }) {
       </div>
 
       {!loading && list.length === 0 ? (
-        <p className="text-[0.8125rem] font-bold text-[#020617]">
+        <p className="text-[0.8125rem] font-bold text-[var(--at-text)]">
           No headlines for this filter.
         </p>
       ) : null}
 
       {disclosure ? (
-        <p className="text-[0.7rem] font-bold text-[#020617]">{disclosure}</p>
+        <p className="text-[0.7rem] font-bold text-[var(--at-text)]">{disclosure}</p>
       ) : null}
     </div>
   );

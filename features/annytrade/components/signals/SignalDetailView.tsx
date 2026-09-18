@@ -80,7 +80,7 @@ export function SignalDetailView({ id }: { id: string }) {
 
   if (loading && !signal) {
     return (
-      <p className="text-[0.8125rem] font-bold text-[#020617]">
+      <p className="text-[0.8125rem] font-bold text-[var(--at-text)]">
         Loading live signal…
       </p>
     );
@@ -91,7 +91,7 @@ export function SignalDetailView({ id }: { id: string }) {
       <div className="at-card">
         <div className="at-card-body py-12 text-center">
           <p className="font-semibold">Signal unavailable</p>
-          <p className="mt-2 text-[0.8125rem] font-bold text-[#020617]">
+          <p className="mt-2 text-[0.8125rem] font-bold text-[var(--at-text)]">
             {cleanCopy(error ?? "Not found")}
           </p>
           <Link
@@ -131,13 +131,13 @@ export function SignalDetailView({ id }: { id: string }) {
                   ? "at-up"
                   : signal.bias === "Bearish"
                     ? "at-down"
-                    : "font-bold text-[#020617]"
+                    : "font-bold text-[var(--at-text)]"
               }
             >
               {signal.bias}
             </span>
           </h1>
-          <p className="mt-1 text-[0.8125rem] font-bold text-[#020617]">
+          <p className="mt-1 text-[0.8125rem] font-bold text-[var(--at-text)]">
             {cleanCopy(signal.title)}
           </p>
         </div>
@@ -145,7 +145,7 @@ export function SignalDetailView({ id }: { id: string }) {
       </div>
 
       <p
-        className="rounded-[8px] border px-3 py-2 text-[0.75rem] font-bold text-[#020617]"
+        className="rounded-[8px] border px-3 py-2 text-[0.75rem] font-bold text-[var(--at-text)]"
         style={{ borderColor: "var(--at-border)" }}
       >
         {cleanCopy(signal.disclosure)}
@@ -182,7 +182,7 @@ export function SignalDetailView({ id }: { id: string }) {
               {signal.reasons.map((r) => (
                 <li key={r.code}>
                   <span className="at-label">{r.label}</span>
-                  <p className="mt-0.5 font-bold text-[#020617]">
+                  <p className="mt-0.5 font-bold text-[var(--at-text)]">
                     {cleanCopy(r.detail)}
                   </p>
                 </li>
@@ -248,7 +248,7 @@ export function SignalDetailView({ id }: { id: string }) {
               <Row label="Candles" value={`${signal.candleCount}`} />
             </div>
             <p
-              className="border-t px-4 py-3 text-[0.65rem] font-bold text-[#020617]"
+              className="border-t px-4 py-3 text-[0.65rem] font-bold text-[var(--at-text)]"
               style={{ borderColor: "var(--at-border)" }}
             >
               {cleanCopy(signal.confidenceMethod)}
@@ -273,7 +273,7 @@ function Row({ label, value }: { label: string; value: string }) {
   return (
     <div>
       <p className="at-label">{label}</p>
-      <p className="mt-0.5 font-bold text-[#020617]">{value}</p>
+      <p className="mt-0.5 font-bold text-[var(--at-text)]">{value}</p>
     </div>
   );
 }

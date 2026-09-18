@@ -83,7 +83,7 @@ export function ExecutionEnvironmentBanner() {
         Live cannot be switched on from the UI.
       </p>
       {ready ? (
-        <p className="mt-1 text-[0.7rem] font-bold text-[#020617]">
+        <p className="mt-1 text-[0.7rem] font-bold text-[var(--at-text)]">
           {ready.message}
           {ready.emergencyKillSwitchActive
             ? " Emergency kill switch ACTIVE."
@@ -91,7 +91,7 @@ export function ExecutionEnvironmentBanner() {
           {ready.compliance.notice}
         </p>
       ) : auth.authenticated ? (
-        <p className="mt-1 text-[0.7rem] font-bold text-[#020617]">
+        <p className="mt-1 text-[0.7rem] font-bold text-[var(--at-text)]">
           Loading readiness…
         </p>
       ) : null}

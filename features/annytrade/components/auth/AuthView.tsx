@@ -59,8 +59,8 @@ const COPY: Record<
 };
 
 const LABEL = {
-  color: "#020617",
-  WebkitTextFillColor: "#020617",
+  color: "var(--at-text)",
+  WebkitTextFillColor: "var(--at-text)",
 } as const;
 
 export function AuthView({ variant }: { variant: AuthVariant }) {
@@ -201,7 +201,7 @@ export function AuthView({ variant }: { variant: AuthVariant }) {
       style={{
         background:
           "radial-gradient(900px 500px at 20% 0%, color-mix(in srgb, var(--at-accent) 10%, transparent), transparent), #f3f5f8",
-        color: "#020617",
+        color: "var(--at-text)",
         paddingBottom: "max(2rem, env(safe-area-inset-bottom))",
         paddingTop: "max(2rem, env(safe-area-inset-top))",
       }}
@@ -214,15 +214,15 @@ export function AuthView({ variant }: { variant: AuthVariant }) {
               className="text-[1.35rem] font-extrabold sm:text-xl"
               style={{
                 fontFamily: "var(--at-font-display)",
-                color: "#020617",
-                WebkitTextFillColor: "#020617",
+                color: "var(--at-text)",
+                WebkitTextFillColor: "var(--at-text)",
               }}
             >
               {copy.title}
             </h1>
             <p
               className="mt-1 text-[0.875rem] font-semibold"
-              style={{ color: "#0f172a", WebkitTextFillColor: "#0f172a" }}
+              style={{ color: "var(--at-text-secondary)", WebkitTextFillColor: "var(--at-text-secondary)" }}
             >
               {copy.subtitle}
             </p>
@@ -234,7 +234,7 @@ export function AuthView({ variant }: { variant: AuthVariant }) {
             </p>
           ) : null}
           {info ? (
-            <p className="rounded-[8px] border px-3 py-2 text-[0.8125rem] font-semibold text-[#020617]">
+            <p className="rounded-[8px] border px-3 py-2 text-[0.8125rem] font-semibold text-[var(--at-text)]">
               {info}
             </p>
           ) : null}

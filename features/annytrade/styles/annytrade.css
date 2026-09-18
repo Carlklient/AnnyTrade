@@ -200,7 +200,7 @@
 }
 
 .at-btn-ghost {
-  background: #fff;
+  background: var(--at-surface);
   border: 1px solid var(--at-border-strong);
   color: var(--at-text);
   font-weight: 700;

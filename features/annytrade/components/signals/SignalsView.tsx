@@ -90,7 +90,7 @@ export function SignalsView() {
         >
           Market signals
         </h1>
-        <p className="mt-2 max-w-2xl text-[0.8125rem] font-bold text-[#020617]">
+        <p className="mt-2 max-w-2xl text-[0.8125rem] font-bold text-[var(--at-text)]">
           Live indicator readings (EMA trend, RSI, MACD, volatility, volume when
           available) refresh every {LIVE_POLL_MS / 1000}s. Labels are{" "}
           <strong className="text-[var(--at-text)]">
@@ -168,7 +168,7 @@ export function SignalsView() {
         <p className="text-[0.8125rem] text-[var(--at-sell)]">{error}</p>
       ) : null}
       {generatedAt ? (
-        <p className="text-[0.7rem] font-bold text-[#020617]">
+        <p className="text-[0.7rem] font-bold text-[var(--at-text)]">
           <span className={live ? "at-up" : ""}>
             {live ? "LIVE" : "Paused"}
           </span>
@@ -197,14 +197,14 @@ export function SignalsView() {
                       {s.bias}
                     </span>
                   </p>
-                  <p className="text-[0.7rem] font-bold text-[#020617]">
+                  <p className="text-[0.7rem] font-bold text-[var(--at-text)]">
                     {cleanCopy(s.title)}, {s.interval}
                     {s.dataFreshness ? `, ${s.dataFreshness}` : ""}
                   </p>
                 </div>
                 <span className="at-badge">{s.status}</span>
               </div>
-              <p className="text-[0.75rem] font-bold text-[#020617]">
+              <p className="text-[0.75rem] font-bold text-[var(--at-text)]">
                 {cleanCopy(s.summary)}
               </p>
               <div className="flex items-center justify-between text-[0.75rem]">
@@ -212,7 +212,7 @@ export function SignalsView() {
                   Alignment <strong>{s.confidence}</strong>
                   {s.insufficientHistory ? ", incomplete history" : ""}
                 </span>
-                <span className="font-bold text-[#020617]">
+                <span className="font-bold text-[var(--at-text)]">
                   {formatCompactTime(s.generatedAt, { seconds: true })}
                 </span>
               </div>
@@ -222,7 +222,7 @@ export function SignalsView() {
       </div>
 
       {!loading && filtered.length === 0 ? (
-        <p className="text-[0.8125rem] font-bold text-[#020617]">
+        <p className="text-[0.8125rem] font-bold text-[var(--at-text)]">
           No signals for these filters.
         </p>
       ) : null}
@@ -232,7 +232,7 @@ export function SignalsView() {
           <div className="at-card-header">
             <h2 className="text-sm font-semibold">Data issues</h2>
           </div>
-          <ul className="at-card-body space-y-1 text-[0.75rem] font-bold text-[#020617]">
+          <ul className="at-card-body space-y-1 text-[0.75rem] font-bold text-[var(--at-text)]">
             {errors.map((e) => (
               <li key={e.symbol}>
                 {e.symbol}: {cleanCopy(e.message)}
@@ -243,7 +243,7 @@ export function SignalsView() {
       ) : null}
 
       {disclosure ? (
-        <p className="text-[0.7rem] font-bold text-[#020617]">{disclosure}</p>
+        <p className="text-[0.7rem] font-bold text-[var(--at-text)]">{disclosure}</p>
       ) : null}
 
       <RiskDisclosure />
@@ -254,5 +254,5 @@ export function SignalsView() {
 function biasClass(bias: SignalBias): string {
   if (bias === "Bullish") return "at-up";
   if (bias === "Bearish") return "at-down";
-  return "font-bold text-[#020617]";
+  return "font-bold text-[var(--at-text)]";
 }

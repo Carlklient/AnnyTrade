@@ -79,7 +79,7 @@ export function CalendarView() {
         >
           Economic calendar
         </h1>
-        <p className="mt-2 text-[0.8125rem] font-bold text-[#020617]">
+        <p className="mt-2 text-[0.8125rem] font-bold text-[var(--at-text)]">
           Times shown in {tz}. Provider fields only. No invented actuals.
         </p>
       </div>
@@ -127,7 +127,7 @@ export function CalendarView() {
         <table className="w-full min-w-[900px] text-left text-[0.8125rem]">
           <thead>
             <tr
-              className="border-b font-bold text-[#020617]"
+              className="border-b font-bold text-[var(--at-text)]"
               style={{ borderColor: "var(--at-border)" }}
             >
               {[
@@ -175,13 +175,13 @@ export function CalendarView() {
           </tbody>
         </table>
         {!loading && filtered.length === 0 ? (
-          <p className="px-4 py-8 text-center text-[0.8125rem] font-bold text-[#020617]">
+          <p className="px-4 py-8 text-center text-[0.8125rem] font-bold text-[var(--at-text)]">
             No events for this range/filter.
           </p>
         ) : null}
       </div>
       {note ? (
-        <p className="text-[0.7rem] font-bold text-[#020617]">{note}</p>
+        <p className="text-[0.7rem] font-bold text-[var(--at-text)]">{note}</p>
       ) : null}
     </div>
   );

@@ -58,35 +58,35 @@ export function OrderReviewConfirm({
         <h2 id="order-review-title" className="text-[1rem] font-semibold">
           Order review
         </h2>
-        <p className="mt-1 text-[0.75rem] font-bold text-[#020617]">
+        <p className="mt-1 text-[0.75rem] font-bold text-[var(--at-text)]">
           Confirm details before any future live submission. Environment cannot
           be changed here.
         </p>
 
         <dl className="mt-3 grid grid-cols-2 gap-x-3 gap-y-2 text-[0.8125rem]">
-          <dt className="font-bold text-[#020617]">Symbol</dt>
+          <dt className="font-bold text-[var(--at-text)]">Symbol</dt>
           <dd className="at-mono font-medium">{review.symbol}</dd>
-          <dt className="font-bold text-[#020617]">Side</dt>
+          <dt className="font-bold text-[var(--at-text)]">Side</dt>
           <dd>{review.side}</dd>
-          <dt className="font-bold text-[#020617]">Quantity</dt>
+          <dt className="font-bold text-[var(--at-text)]">Quantity</dt>
           <dd className="at-mono">{review.quantity}</dd>
-          <dt className="font-bold text-[#020617]">Order type</dt>
+          <dt className="font-bold text-[var(--at-text)]">Order type</dt>
           <dd>{review.orderType}</dd>
-          <dt className="font-bold text-[#020617]">Limit</dt>
+          <dt className="font-bold text-[var(--at-text)]">Limit</dt>
           <dd className="at-mono">{review.limitPrice ?? "n/a"}</dd>
-          <dt className="font-bold text-[#020617]">Stop</dt>
+          <dt className="font-bold text-[var(--at-text)]">Stop</dt>
           <dd className="at-mono">{review.stopPrice ?? "n/a"}</dd>
-          <dt className="font-bold text-[#020617]">Est. value</dt>
+          <dt className="font-bold text-[var(--at-text)]">Est. value</dt>
           <dd className="at-mono">
             {review.estimatedValue != null
               ? review.estimatedValue.toFixed(2)
               : "n/a"}
           </dd>
-          <dt className="font-bold text-[#020617]">Market</dt>
+          <dt className="font-bold text-[var(--at-text)]">Market</dt>
           <dd>{review.marketState}</dd>
-          <dt className="font-bold text-[#020617]">Account</dt>
+          <dt className="font-bold text-[var(--at-text)]">Account</dt>
           <dd>{review.accountLabel}</dd>
-          <dt className="font-bold text-[#020617]">Environment</dt>
+          <dt className="font-bold text-[var(--at-text)]">Environment</dt>
           <dd>
             <span
               className="at-badge"

@@ -51,7 +51,7 @@ export function WatchlistQuotesPanel({
   if (watchlists.length === 0) {
     return (
       <div className="at-card-body">
-        <p className="text-[0.8125rem] font-bold text-[#020617]">
+        <p className="text-[0.8125rem] font-bold text-[var(--at-text)]">
           No watchlists yet. Add symbols from Markets after you sign in.
         </p>
       </div>
@@ -61,7 +61,7 @@ export function WatchlistQuotesPanel({
   return (
     <div className="at-card-body space-y-4">
       {error || polledError ? (
-        <p className="text-[0.75rem] font-bold text-[#020617]">
+        <p className="text-[0.75rem] font-bold text-[var(--at-text)]">
           {error
             ? "Realtime stream failed. Showing REST quote updates instead."
             : polledError}
@@ -72,7 +72,7 @@ export function WatchlistQuotesPanel({
         <div key={w.id} className="space-y-2">
           <div>
             <p className="at-label">{w.name}</p>
-            <p className="text-[0.7rem] font-bold text-[#020617]">
+            <p className="text-[0.7rem] font-bold text-[var(--at-text)]">
               {w.symbols.length} symbols
             </p>
           </div>
@@ -96,7 +96,7 @@ export function WatchlistQuotesPanel({
                     >
                       {symbol}
                     </Link>
-                    <p className="text-[0.65rem] font-bold text-[#020617]">
+                    <p className="text-[0.65rem] font-bold text-[var(--at-text)]">
                       {quote?.timestamp
                         ? formatUpdated(quote.timestamp)
                         : loading
@@ -126,7 +126,7 @@ export function WatchlistQuotesPanel({
               );
             })}
             {w.symbols.length > 6 ? (
-              <li className="px-1 text-[0.7rem] font-bold text-[#020617]">
+              <li className="px-1 text-[0.7rem] font-bold text-[var(--at-text)]">
                 + {w.symbols.length - 6} more
               </li>
             ) : null}

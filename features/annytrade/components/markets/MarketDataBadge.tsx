@@ -16,7 +16,7 @@ export function MarketDataBadge() {
           background: "var(--at-surface)",
         }}
       >
-        <span className="font-bold text-[#020617]">Market Data</span>
+        <span className="font-bold text-[var(--at-text)]">Market Data</span>
         <span className="font-semibold">…</span>
       </div>
     );
@@ -64,8 +64,8 @@ export function MarketDataBadge() {
         }}
       />
       <span className="min-w-0">
-        <span className="block font-bold text-[#020617]">{label}</span>
-        <span className="block truncate text-[0.6rem] font-semibold text-[#0f172a]">
+        <span className="block font-bold text-[var(--at-text)]">{label}</span>
+        <span className="block truncate text-[0.6rem] font-semibold text-[var(--at-text-secondary)]">
           {detail}
         </span>
       </span>

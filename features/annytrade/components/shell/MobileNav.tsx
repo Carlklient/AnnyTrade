@@ -53,7 +53,7 @@ export function MobileNav() {
                 href={item.href}
                 className={cnAt(
                   "flex h-full flex-col items-center justify-center gap-0.5 rounded-md px-1 text-[0.58rem] font-bold",
-                  active ? "text-[var(--at-accent)]" : "text-[#020617]",
+                  active ? "text-[var(--at-accent)]" : "text-[var(--at-text)]",
                 )}
               >
                 <Icon className="h-4 w-4" aria-hidden />

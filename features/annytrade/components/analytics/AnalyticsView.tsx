@@ -51,7 +51,7 @@ export function AnalyticsView() {
       <div className="at-card">
         <div className="at-card-body py-12 text-center">
           <p className="font-semibold">PAPER performance analytics</p>
-          <p className="mt-2 text-[0.8125rem] font-bold text-[#020617]">
+          <p className="mt-2 text-[0.8125rem] font-bold text-[var(--at-text)]">
             Sign in to compute analytics from your paper ledger, executions, and
             equity snapshots.
           </p>
@@ -116,7 +116,7 @@ export function AnalyticsView() {
         <p className="text-[0.8125rem] text-[var(--at-sell)]">{error}</p>
       ) : null}
       {data && !data.marksComplete ? (
-        <p className="text-[0.75rem] font-bold text-[#020617]">
+        <p className="text-[0.75rem] font-bold text-[var(--at-text)]">
           Marks incomplete for {data.unmarkedSymbols.join(", ")}. Equity/growth
           withheld rather than inventing prices.
         </p>
@@ -282,7 +282,7 @@ export function AnalyticsView() {
               <span className="at-up">Long {t?.longPct ?? 100}%</span>
               <span className="at-down">Short {t?.shortPct ?? 0}%</span>
             </div>
-            <p className="mt-2 text-[0.65rem] font-bold text-[#020617]">
+            <p className="mt-2 text-[0.65rem] font-bold text-[var(--at-text)]">
               Phase 3/4 paper accounts are long only.
             </p>
           </div>
@@ -315,7 +315,7 @@ export function AnalyticsView() {
               </li>
             ))}
             {(data?.allocation.length ?? 0) === 0 ? (
-              <li className="text-[0.8125rem] font-bold text-[#020617]">
+              <li className="text-[0.8125rem] font-bold text-[var(--at-text)]">
                 No marked open positions.
               </li>
             ) : null}
@@ -328,10 +328,10 @@ export function AnalyticsView() {
           <div className="at-card-header">
             <h2 className="text-sm font-semibold">Methodology</h2>
           </div>
-          <ul className="at-card-body space-y-1 text-[0.75rem] font-bold text-[#020617]">
+          <ul className="at-card-body space-y-1 text-[0.75rem] font-bold text-[var(--at-text)]">
             {Object.entries(data.methodology).map(([k, v]) => (
               <li key={k}>
-                <strong className="font-bold text-[#020617]">{k}:</strong> {v}
+                <strong className="font-bold text-[var(--at-text)]">{k}:</strong> {v}
               </li>
             ))}
           </ul>
@@ -379,14 +379,14 @@ function BarCard({
       </div>
       <div className="at-card-body space-y-2">
         {data.length === 0 ? (
-          <p className="text-[0.75rem] font-bold text-[#020617]">
+          <p className="text-[0.75rem] font-bold text-[var(--at-text)]">
             {emptyHint ?? "No data."}
           </p>
         ) : null}
         {data.slice(-12).map((row) => (
           <div key={row.label} className="text-[0.75rem]">
             <div className="mb-1 flex justify-between gap-2">
-              <span className="font-bold text-[#020617]">{row.label}</span>
+              <span className="font-bold text-[var(--at-text)]">{row.label}</span>
               <span className={`at-mono ${pnlClass(row.pnl)}`}>
                 {formatMoney(row.pnl, "USD", { signed: true })}
               </span>

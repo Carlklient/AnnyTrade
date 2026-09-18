@@ -43,7 +43,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
 
   if (allowed === null) {
     return (
-      <div className="p-6 text-[0.875rem] font-bold text-[#020617]">
+      <div className="p-6 text-[0.875rem] font-bold text-[var(--at-text)]">
         Checking admin authorization…
       </div>
     );
@@ -53,7 +53,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
     return (
       <div className="mx-auto max-w-lg p-6">
         <h1 className="text-xl font-semibold">Admin access denied</h1>
-        <p className="mt-2 text-[0.8125rem] font-bold text-[#020617]">
+        <p className="mt-2 text-[0.8125rem] font-bold text-[var(--at-text)]">
           {error ??
             "You are not an assigned admin. UI hiding is not security. API calls are authorized server-side."}
         </p>
@@ -78,7 +78,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
       >
         <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-2">
           <div>
-            <p className="text-[0.65rem] font-bold tracking-wide text-[#020617] uppercase">
+            <p className="text-[0.65rem] font-bold tracking-wide text-[var(--at-text)] uppercase">
               AnnyTrade operations
             </p>
             <h1 className="text-lg font-semibold">Admin, {role}</h1>
@@ -99,7 +99,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
           ))}
           <Link
             href={annytradeRoutes.dashboard}
-            className="font-bold text-[#020617]"
+            className="font-bold text-[var(--at-text)]"
           >
             Desk
           </Link>

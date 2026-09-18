@@ -373,7 +373,7 @@ export function TradeView({ symbol }: TradeViewProps) {
         <InstrumentsRail activeSymbol={sym} />
         <div className="at-terminal-center">
           <div className="at-card">
-            <div className="at-card-body py-16 text-center text-[0.8125rem] font-bold text-[#020617]">
+            <div className="at-card-body py-16 text-center text-[0.8125rem] font-bold text-[var(--at-text)]">
               Loading instrument…
             </div>
           </div>
@@ -391,7 +391,7 @@ export function TradeView({ symbol }: TradeViewProps) {
       <div className="at-card">
         <div className="at-card-body py-16 text-center">
           <p className="font-semibold">Instrument unavailable</p>
-          <p className="mt-1 text-[0.8125rem] font-bold text-[#020617]">
+          <p className="mt-1 text-[0.8125rem] font-bold text-[var(--at-text)]">
             Symbol â€œ{sym}â€ was not found in the market-data catalog.
           </p>
           <Link
@@ -410,7 +410,7 @@ export function TradeView({ symbol }: TradeViewProps) {
       <div className="at-card">
         <div className="at-card-body py-16 text-center">
           <p className="font-semibold">Market data error</p>
-          <p className="mt-1 text-[0.8125rem] font-bold text-[#020617]">
+          <p className="mt-1 text-[0.8125rem] font-bold text-[var(--at-text)]">
             {instError}
           </p>
         </div>
@@ -489,10 +489,10 @@ export function TradeView({ symbol }: TradeViewProps) {
                 {formatPct(changePct)}
               </span>
             </h1>
-            <p className="mt-1 text-[0.8125rem] font-bold text-[#020617]">
+            <p className="mt-1 text-[0.8125rem] font-bold text-[var(--at-text)]">
               {demoFallback ? demoAsset!.name : instrument?.name}
               {!demoFallback && quote?.timestamp ? (
-                <span className="ml-2 font-bold text-[#020617]">
+                <span className="ml-2 font-bold text-[var(--at-text)]">
                   Updated {formatTs(quote.timestamp)}
                 </span>
               ) : null}
@@ -679,7 +679,7 @@ export function TradeView({ symbol }: TradeViewProps) {
                     {label}
                   </button>
                 ))}
-                <span className="font-bold text-[#020617]">
+                <span className="font-bold text-[var(--at-text)]">
                   Deterministic overlays, prefs saved locally
                 </span>
               </div>
@@ -721,7 +721,7 @@ export function TradeView({ symbol }: TradeViewProps) {
               <div
                 className={`at-card-body space-y-3 pt-2 ${bookOpen ? "" : "max-lg:hidden"}`}
               >
-                <p className="text-[0.65rem] font-bold text-[#020617]">
+                <p className="text-[0.65rem] font-bold text-[var(--at-text)]">
                   Simulated ladder from quote · tap a price to seed a limit ·
                   not live Level 2.
                 </p>
@@ -742,7 +742,7 @@ export function TradeView({ symbol }: TradeViewProps) {
                     />
                   </>
                 ) : (
-                  <p className="text-[0.8125rem] font-bold text-[#020617]">
+                  <p className="text-[0.8125rem] font-bold text-[var(--at-text)]">
                     Waiting for quote to build illustrative depth.
                   </p>
                 )}
@@ -926,7 +926,7 @@ export function TradeView({ symbol }: TradeViewProps) {
                     Sell {bid != null ? formatPrice(bid) : ""}
                   </button>
                 </div>
-                <p className="text-[0.65rem] leading-relaxed font-bold text-[#020617]">
+                <p className="text-[0.65rem] leading-relaxed font-bold text-[var(--at-text)]">
                   Fills use server market data (buy→ask / sell→bid). Long-only.
                   No margin. TP/SL brackets attach after BUY fills.
                   {!auth.authenticated ? " Sign in required." : ""}
@@ -972,7 +972,7 @@ export function TradeView({ symbol }: TradeViewProps) {
             panel !== "details" &&
             panel !== "news" &&
             panel !== "alerts" ? (
-              <p className="text-[0.8125rem] font-bold text-[#020617]">
+              <p className="text-[0.8125rem] font-bold text-[var(--at-text)]">
                 Sign in to view PAPER positions and orders.{" "}
                 <Link
                   href={annytradeRoutes.auth.login}
@@ -984,7 +984,7 @@ export function TradeView({ symbol }: TradeViewProps) {
             ) : null}
             {panel === "positions" && auth.authenticated ? (
               positions.length === 0 ? (
-                <p className="text-[0.8125rem] font-bold text-[#020617]">
+                <p className="text-[0.8125rem] font-bold text-[var(--at-text)]">
                   No open PAPER position on this symbol.
                 </p>
               ) : (
@@ -1006,7 +1006,7 @@ export function TradeView({ symbol }: TradeViewProps) {
             ) : null}
             {panel === "pending" && auth.authenticated ? (
               openOrders.length === 0 ? (
-                <p className="text-[0.8125rem] font-bold text-[#020617]">
+                <p className="text-[0.8125rem] font-bold text-[var(--at-text)]">
                   No open PAPER orders.
                 </p>
               ) : (
@@ -1183,10 +1183,10 @@ function DepthSide({
             >
               {formatPrice(l.price)}
             </span>
-            <span className="at-mono relative text-right font-bold text-[#020617]">
+            <span className="at-mono relative text-right font-bold text-[var(--at-text)]">
               {l.size}
             </span>
-            <span className="at-mono relative text-right font-bold text-[#020617]">
+            <span className="at-mono relative text-right font-bold text-[var(--at-text)]">
               {l.total}
             </span>
           </button>
@@ -1207,7 +1207,7 @@ function SimpleTable({
     <div className="overflow-x-auto">
       <table className="w-full min-w-[520px] text-left text-[0.8125rem]">
         <thead>
-          <tr className="font-bold text-[#020617]">
+          <tr className="font-bold text-[var(--at-text)]">
             {headers.map((h) => (
               <th key={h} className="pb-2 font-medium">
                 {h}

@@ -46,7 +46,7 @@ export function SymbolAlertsPanel({
 
   if (!auth.authenticated) {
     return (
-      <p className="text-[0.8125rem] font-bold text-[#020617]">
+      <p className="text-[0.8125rem] font-bold text-[var(--at-text)]">
         Sign in to create price alerts.{" "}
         <Link
           href={annytradeRoutes.auth.login}
@@ -87,7 +87,7 @@ export function SymbolAlertsPanel({
 
   return (
     <div className="space-y-4">
-      <p className="text-[0.75rem] font-bold text-[#020617]">
+      <p className="text-[0.75rem] font-bold text-[var(--at-text)]">
         Server-side evaluation with arming + cooldown to prevent spam. In-app
         notifications first.
         {lastPrice != null ? ` Last ${formatPrice(lastPrice)}.` : ""}
@@ -96,7 +96,7 @@ export function SymbolAlertsPanel({
         <p className="text-[0.8125rem] text-[var(--at-sell)]">{error}</p>
       ) : null}
       {message ? (
-        <p className="text-[0.8125rem] font-bold text-[#020617]">{message}</p>
+        <p className="text-[0.8125rem] font-bold text-[var(--at-text)]">{message}</p>
       ) : null}
 
       <div className="flex flex-wrap items-end gap-2">
@@ -163,7 +163,7 @@ export function SymbolAlertsPanel({
           </li>
         ))}
         {alerts.length === 0 ? (
-          <li className="font-bold text-[#020617]">No alerts for {symbol}.</li>
+          <li className="font-bold text-[var(--at-text)]">No alerts for {symbol}.</li>
         ) : null}
       </ul>
     </div>

@@ -210,7 +210,7 @@ export function PortfolioView() {
       <div className="at-card">
         <div className="at-card-body py-12 text-center">
           <p className="font-semibold">PAPER portfolio</p>
-          <p className="mt-2 text-[0.8125rem] font-bold text-[#020617]">
+          <p className="mt-2 text-[0.8125rem] font-bold text-[var(--at-text)]">
             Sign in to view persistent paper positions and orders.
           </p>
           <Link
@@ -334,10 +334,10 @@ export function PortfolioView() {
         />
       </div>
       {note ? (
-        <p className="text-[0.75rem] font-bold text-[#020617]">{note}</p>
+        <p className="text-[0.75rem] font-bold text-[var(--at-text)]">{note}</p>
       ) : null}
       {summary?.feesPaid != null && summary.feesPaid > 0 ? (
-        <p className="text-[0.75rem] font-bold text-[#020617]">
+        <p className="text-[0.75rem] font-bold text-[var(--at-text)]">
           Fees paid: {formatMoney(summary.feesPaid, currency)}
         </p>
       ) : null}
@@ -386,7 +386,7 @@ export function PortfolioView() {
           <table className="w-full min-w-[800px] text-left text-[0.8125rem]">
             <thead>
               <tr
-                className="border-b font-bold text-[#020617]"
+                className="border-b font-bold text-[var(--at-text)]"
                 style={{ borderColor: "var(--at-border)" }}
               >
                 {[
@@ -443,7 +443,7 @@ export function PortfolioView() {
                       ? formatMoney(p.unrealizedPnl, currency, { signed: true })
                       : "n/a"}
                   </td>
-                  <td className="px-3 py-3 font-bold text-[#020617]">
+                  <td className="px-3 py-3 font-bold text-[var(--at-text)]">
                     {formatCompactTime(p.openedAt)}
                   </td>
                   <td className="px-3 py-3 text-right">
@@ -476,7 +476,7 @@ export function PortfolioView() {
           <table className="w-full min-w-[640px] text-left text-[0.8125rem]">
             <thead>
               <tr
-                className="border-b font-bold text-[#020617]"
+                className="border-b font-bold text-[var(--at-text)]"
                 style={{ borderColor: "var(--at-border)" }}
               >
                 {["Symbol", "Type", "Side", "Qty", "Prices", "Status", ""].map(
@@ -542,7 +542,7 @@ export function PortfolioView() {
           <table className="w-full min-w-[640px] text-left text-[0.8125rem]">
             <thead>
               <tr
-                className="border-b font-bold text-[#020617]"
+                className="border-b font-bold text-[var(--at-text)]"
                 style={{ borderColor: "var(--at-border)" }}
               >
                 {["Symbol", "Realized P&L", "Closed"].map((h) => (
@@ -565,7 +565,7 @@ export function PortfolioView() {
                   >
                     {formatMoney(p.realizedPnl, currency, { signed: true })}
                   </td>
-                  <td className="px-3 py-3 font-bold text-[#020617]">
+                  <td className="px-3 py-3 font-bold text-[var(--at-text)]">
                     {p.closedAt ? formatCompactTime(p.closedAt) : "n/a"}
                   </td>
                 </tr>
@@ -578,7 +578,7 @@ export function PortfolioView() {
           (tab === "pending" && pending.length === 0) ||
           (tab === "closed" && closed.length === 0)) &&
         !loading ? (
-          <div className="px-4 py-10 text-center text-[0.8125rem] font-bold text-[#020617]">
+          <div className="px-4 py-10 text-center text-[0.8125rem] font-bold text-[var(--at-text)]">
             Nothing here yet.
           </div>
         ) : null}

@@ -147,7 +147,7 @@ export function CandleChart({
     return (
       <div
         className={cnAt(
-          "flex h-[320px] items-center justify-center text-[0.8125rem] font-bold text-[#020617] sm:h-[380px] lg:h-[420px]",
+          "flex h-[320px] items-center justify-center text-[0.8125rem] font-bold text-[var(--at-text)] sm:h-[380px] lg:h-[420px]",
           className,
         )}
       >
@@ -165,7 +165,7 @@ export function CandleChart({
         )}
       >
         <p className="font-semibold text-[var(--at-sell)]">Chart unavailable</p>
-        <p className="font-bold text-[#020617]">{error}</p>
+        <p className="font-bold text-[var(--at-text)]">{error}</p>
       </div>
     );
   }
@@ -174,7 +174,7 @@ export function CandleChart({
     return (
       <div
         className={cnAt(
-          "flex h-[320px] items-center justify-center text-[0.8125rem] font-bold text-[#020617] sm:h-[380px] lg:h-[420px]",
+          "flex h-[320px] items-center justify-center text-[0.8125rem] font-bold text-[var(--at-text)] sm:h-[380px] lg:h-[420px]",
           className,
         )}
       >
@@ -436,7 +436,7 @@ export function CandleChart({
           Clear
         </button>
         {drawTool !== "none" ? (
-          <span className="text-[0.65rem] font-semibold text-[#0f172a]">
+          <span className="text-[0.65rem] font-semibold text-[var(--at-text-secondary)]">
             {drawTool === "hline"
               ? "Click chart to place horizontal"
               : drawTool === "fib"
@@ -449,7 +449,7 @@ export function CandleChart({
           </span>
         ) : null}
         {tradeArmed ? (
-          <span className="text-[0.65rem] font-semibold text-[#0f172a]">
+          <span className="text-[0.65rem] font-semibold text-[var(--at-text-secondary)]">
             {oneClick
               ? "Click chart → PAPER buy at level"
               : "Click chart → pick buy/sell at level"}
@@ -509,7 +509,7 @@ export function CandleChart({
           }}
           role="status"
         >
-          <p className="at-mono font-bold text-[#020617]">
+          <p className="at-mono font-bold text-[var(--at-text)]">
             {new Date(hover.time).toLocaleString()}
           </p>
           <p className="at-mono mt-0.5">
@@ -517,7 +517,7 @@ export function CandleChart({
             {formatPrice(hover.low)}, C {formatPrice(hover.close)}
           </p>
           {hover.volume > 0 ? (
-            <p className="at-mono font-bold text-[#020617]">
+            <p className="at-mono font-bold text-[var(--at-text)]">
               Vol {hover.volume.toLocaleString()}
             </p>
           ) : null}
@@ -1021,7 +1021,7 @@ export function CandleChart({
           />
         ) : null}
       </svg>
-      <p className="px-3 pb-2 text-[0.65rem] font-bold text-[#020617]">
+      <p className="px-3 pb-2 text-[0.65rem] font-bold text-[var(--at-text)]">
         Scroll or drag to pan · H-Line / Trend drawings save locally ·
         Educational overlays only
       </p>

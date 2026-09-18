@@ -119,7 +119,7 @@ export function AccountView() {
         </div>
         <div className="at-card">
           <div className="at-card-body space-y-3 text-[0.875rem]">
-            <p className="font-bold text-[#020617]">
+            <p className="font-bold text-[var(--at-text)]">
               You are browsing the <strong>public product demo</strong>. Market
               prices and balances shown on other screens are simulated. Sign in
               to persist profile, watchlists, paper accounts, and notifications.
@@ -138,7 +138,7 @@ export function AccountView() {
                 Create paper account
               </Link>
             </div>
-            <p className="text-[0.75rem] font-bold text-[#020617]">
+            <p className="text-[0.75rem] font-bold text-[var(--at-text)]">
               Guest session still uses mock desk data: {user.email}
             </p>
           </div>
@@ -169,7 +169,7 @@ export function AccountView() {
       </div>
 
       {message ? (
-        <p className="text-[0.8125rem] font-bold text-[#020617]">{message}</p>
+        <p className="text-[0.8125rem] font-bold text-[var(--at-text)]">{message}</p>
       ) : null}
 
       <div className="grid gap-4 lg:grid-cols-2">
@@ -247,7 +247,7 @@ export function AccountView() {
           </div>
           <div className="at-card-body space-y-3 text-[0.8125rem]">
             <div className="flex items-center justify-between gap-3">
-              <span className="font-bold text-[#020617]">
+              <span className="font-bold text-[var(--at-text)]">
                 Paper / Preview UI
               </span>
               <ModeSwitch />
@@ -256,7 +256,7 @@ export function AccountView() {
               label="UI posture"
               value={mode === "live" ? "Preview UI" : "Paper"}
             />
-            <p className="text-[0.7rem] font-bold text-[#020617]">
+            <p className="text-[0.7rem] font-bold text-[var(--at-text)]">
               Preview UI only changes layout chrome. Paper ledger funds are not
               real money. Market quotes may be DEMO or a live vendor feed.
             </p>
@@ -363,7 +363,7 @@ export function AccountView() {
           </div>
           <div className="at-card-body">
             <SymbolAlertsPanel symbol="AAPL" />
-            <p className="mt-3 text-[0.7rem] font-bold text-[#020617]">
+            <p className="mt-3 text-[0.7rem] font-bold text-[var(--at-text)]">
               Create symbol-specific alerts from the Trade desk Alerts tab.
               Example panel defaults to AAPL.
             </p>
@@ -387,7 +387,7 @@ function Row({ label, value }: { label: string; value: string }) {
       className="flex items-start justify-between gap-4 border-b pb-2 last:border-0"
       style={{ borderColor: "var(--at-border)" }}
     >
-      <span className="font-bold text-[#020617]">{label}</span>
+      <span className="font-bold text-[var(--at-text)]">{label}</span>
       <span className="text-right font-medium">{value}</span>
     </div>
   );

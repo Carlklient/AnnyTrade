@@ -137,7 +137,7 @@ export function GlobalSearch({
       }}
     >
       {loading ? (
-        <p className="px-3 py-2.5 text-[0.75rem] font-semibold text-[#020617]">
+        <p className="px-3 py-2.5 text-[0.75rem] font-semibold text-[var(--at-text)]">
           Searching…
         </p>
       ) : null}
@@ -147,7 +147,7 @@ export function GlobalSearch({
         </p>
       ) : null}
       {!loading && !error && rows.length === 0 ? (
-        <p className="px-3 py-2.5 text-[0.75rem] font-semibold text-[#020617]">
+        <p className="px-3 py-2.5 text-[0.75rem] font-semibold text-[var(--at-text)]">
           No matches
         </p>
       ) : null}
@@ -166,8 +166,8 @@ export function GlobalSearch({
                   onMouseEnter={() => setHighlight(idx)}
                   onClick={() => go(row.href)}
                 >
-                  <span className="font-bold text-[#020617]">{row.symbol}</span>
-                  <span className="truncate text-[0.7rem] font-semibold text-[#0f172a]">
+                  <span className="font-bold text-[var(--at-text)]">{row.symbol}</span>
+                  <span className="truncate text-[0.7rem] font-semibold text-[var(--at-text-secondary)]">
                     {row.name}
                   </span>
                 </button>
@@ -192,7 +192,7 @@ export function GlobalSearch({
         })}
       </ul>
       <div
-        className="border-t px-3 py-1.5 text-[0.65rem] font-semibold text-[#0f172a]"
+        className="border-t px-3 py-1.5 text-[0.65rem] font-semibold text-[var(--at-text-secondary)]"
         style={{ borderColor: "var(--at-border)" }}
       >
         Enter to open · Esc to close
@@ -221,7 +221,7 @@ export function GlobalSearch({
           >
             <div className="relative mx-auto max-w-lg">
               <Search
-                className="pointer-events-none absolute top-1/2 left-2.5 size-3.5 -translate-y-1/2 text-[#020617]"
+                className="pointer-events-none absolute top-1/2 left-2.5 size-3.5 -translate-y-1/2 text-[var(--at-text)]"
                 strokeWidth={1.75}
               />
               <input
@@ -261,7 +261,7 @@ export function GlobalSearch({
   return (
     <div className="relative hidden min-w-0 flex-1 md:block md:max-w-sm" ref={rootRef}>
       <Search
-        className="pointer-events-none absolute top-1/2 left-2.5 size-3.5 -translate-y-1/2 text-[#020617]"
+        className="pointer-events-none absolute top-1/2 left-2.5 size-3.5 -translate-y-1/2 text-[var(--at-text)]"
         strokeWidth={1.75}
       />
       <input

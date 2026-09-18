@@ -35,7 +35,7 @@ export function ModeSwitch() {
             onClick={() => setMode(m)}
             className={cnAt(
               "rounded-[6px] px-2 py-1 text-[0.625rem] font-bold tracking-[0.04em] uppercase transition-colors sm:px-2.5 sm:text-[0.6875rem]",
-              active ? "" : "font-bold text-[#020617] hover:font-bold",
+              active ? "" : "font-bold text-[var(--at-text)] hover:font-bold",
             )}
             style={
               active

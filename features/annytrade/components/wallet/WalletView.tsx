@@ -105,7 +105,7 @@ export function WalletView() {
             >
               Sign in for your paper ledger
             </h1>
-            <p className="text-[0.875rem] font-semibold text-[#0f172a]">
+            <p className="text-[0.875rem] font-semibold text-[var(--at-text-secondary)]">
               Guest mode shows mock desk chrome only. Sign in to see cash,
               fills, fees, and practice top-ups from your real paper account.
             </p>
@@ -186,7 +186,7 @@ export function WalletView() {
               Practice top-up
             </h1>
           </div>
-          <p className="text-[0.8125rem] font-semibold text-[#0f172a]">
+          <p className="text-[0.8125rem] font-semibold text-[var(--at-text-secondary)]">
             Add synthetic paper cash for practice, or reset toward your starting
             balance. These are ledger adjustments — not bank transfers.
           </p>
@@ -232,7 +232,7 @@ export function WalletView() {
                 <p className="text-[0.8125rem] font-bold capitalize">
                   {t.category.replaceAll("_", " ").toLowerCase()}
                 </p>
-                <p className="text-[0.7rem] font-semibold text-[#0f172a]">
+                <p className="text-[0.7rem] font-semibold text-[var(--at-text-secondary)]">
                   {formatCompactTime(t.createdAt)}
                   {t.memo ? ` · ${t.memo}` : ""}
                 </p>
@@ -243,7 +243,7 @@ export function WalletView() {
             </li>
           ))}
           {auth.authenticated && ledger && ledger.entries.length === 0 ? (
-            <li className="px-4 py-6 text-[0.8125rem] font-bold text-[#020617]">
+            <li className="px-4 py-6 text-[0.8125rem] font-bold text-[var(--at-text)]">
               No ledger entries yet.
             </li>
           ) : null}

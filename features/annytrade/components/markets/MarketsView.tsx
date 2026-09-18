@@ -274,7 +274,7 @@ export function MarketsView() {
 
       {rows.length === 0 && !loading ? (
         <div className="at-card">
-          <div className="at-card-body py-10 text-center text-[0.8125rem] font-bold text-[#020617]">
+          <div className="at-card-body py-10 text-center text-[0.8125rem] font-bold text-[var(--at-text)]">
             No instruments match this filter. Try All or search another symbol.
           </div>
         </div>
@@ -284,7 +284,7 @@ export function MarketsView() {
             <table className="w-full min-w-[960px] text-left text-[0.8125rem]">
               <thead>
                 <tr
-                  className="border-b font-bold text-[#020617]"
+                  className="border-b font-bold text-[var(--at-text)]"
                   style={{
                     borderColor: "var(--at-border)",
                     background: "var(--at-bg-elevated)",
@@ -338,7 +338,7 @@ export function MarketsView() {
                               instrument.id,
                             )
                           }
-                          className="font-bold text-[#020617] hover:text-[var(--at-accent)]"
+                          className="font-bold text-[var(--at-text)] hover:text-[var(--at-accent)]"
                         >
                           <Star
                             className="size-3.5"
@@ -354,11 +354,11 @@ export function MarketsView() {
                         >
                           {instrument.displaySymbol}
                         </Link>
-                        <p className="text-[0.65rem] font-bold text-[#020617] capitalize">
+                        <p className="text-[0.65rem] font-bold text-[var(--at-text)] capitalize">
                           {instrument.assetClass}
                         </p>
                       </td>
-                      <td className="max-w-[10rem] truncate px-3 py-3 font-bold text-[#020617]">
+                      <td className="max-w-[10rem] truncate px-3 py-3 font-bold text-[var(--at-text)]">
                         {instrument.name}
                       </td>
                       <td
@@ -371,10 +371,10 @@ export function MarketsView() {
                             ? "…"
                             : "n/a"}
                       </td>
-                      <td className="at-mono px-3 py-3 font-bold text-[#020617]">
+                      <td className="at-mono px-3 py-3 font-bold text-[var(--at-text)]">
                         {bid != null ? formatPrice(bid) : "n/a"}
                       </td>
-                      <td className="at-mono px-3 py-3 font-bold text-[#020617]">
+                      <td className="at-mono px-3 py-3 font-bold text-[var(--at-text)]">
                         {ask != null ? formatPrice(ask) : "n/a"}
                       </td>
                       <td
@@ -382,10 +382,10 @@ export function MarketsView() {
                       >
                         {quote ? formatPct(changePct) : "n/a"}
                       </td>
-                      <td className="at-mono px-3 py-3 font-bold text-[#020617]">
+                      <td className="at-mono px-3 py-3 font-bold text-[var(--at-text)]">
                         {high != null ? formatPrice(high) : "n/a"}
                       </td>
-                      <td className="at-mono px-3 py-3 font-bold text-[#020617]">
+                      <td className="at-mono px-3 py-3 font-bold text-[var(--at-text)]">
                         {low != null ? formatPrice(low) : "n/a"}
                       </td>
                       <td className="px-3 py-3">
@@ -408,12 +408,12 @@ export function MarketsView() {
             </table>
           </div>
           {loading ? (
-            <div className="px-4 py-10 text-center text-[0.8125rem] font-bold text-[#020617]">
+            <div className="px-4 py-10 text-center text-[0.8125rem] font-bold text-[var(--at-text)]">
               Loading instruments…
             </div>
           ) : null}
           {!loading && rows.length === 0 ? (
-            <div className="px-4 py-10 text-center text-[0.8125rem] font-bold text-[#020617]">
+            <div className="px-4 py-10 text-center text-[0.8125rem] font-bold text-[var(--at-text)]">
               No instruments match this filter.
             </div>
           ) : null}

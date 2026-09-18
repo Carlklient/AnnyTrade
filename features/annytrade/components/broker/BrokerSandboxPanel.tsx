@@ -113,7 +113,7 @@ export function BrokerSandboxPanel() {
 
   if (!auth.authenticated) {
     return (
-      <p className="text-[0.8125rem] font-bold text-[#020617]">
+      <p className="text-[0.8125rem] font-bold text-[var(--at-text)]">
         Sign in to manage Broker Paper / Sandbox.{" "}
         <Link
           href={annytradeRoutes.auth.login}
@@ -155,7 +155,7 @@ export function BrokerSandboxPanel() {
           </p>
           {status.credentials.required ? (
             <p
-              className="rounded-[8px] border px-3 py-2 font-bold text-[#020617]"
+              className="rounded-[8px] border px-3 py-2 font-bold text-[var(--at-text)]"
               style={{ borderColor: "var(--at-border)" }}
             >
               Broker sandbox credentials are not configured. Architecture is
@@ -171,7 +171,7 @@ export function BrokerSandboxPanel() {
             </p>
           )}
           {status.provider ? (
-            <div className="text-[0.75rem] font-bold text-[#020617]">
+            <div className="text-[0.75rem] font-bold text-[var(--at-text)]">
               <p>{status.provider.label}</p>
               <p>{status.provider.supportedAssetsNote}</p>
               <p>
@@ -194,7 +194,7 @@ export function BrokerSandboxPanel() {
           ) : null}
         </>
       ) : (
-        <p className="font-bold text-[#020617]">Loading broker status…</p>
+        <p className="font-bold text-[var(--at-text)]">Loading broker status…</p>
       )}
 
       <div className="flex flex-wrap gap-2">
@@ -223,7 +223,7 @@ export function BrokerSandboxPanel() {
           Refresh
         </button>
       </div>
-      <p className="text-[0.7rem] font-bold text-[#020617]">
+      <p className="text-[0.7rem] font-bold text-[var(--at-text)]">
         AnnyTrade PAPER engine is preserved and separate. Broker balances never
         mix with internal paper ledger.
       </p>

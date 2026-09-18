@@ -63,18 +63,41 @@
 [data-annytrade][data-at-theme="dark"] .font-bold.text-\[\#020617\],
 [data-annytrade][data-at-theme="dark"] .font-extrabold.text-\[\#020617\],
 [data-annytrade][data-at-theme="dark"] [class*="text-[#020617]"],
-[data-annytrade][data-at-theme="dark"] [class*="text-[#0f172a]"] {
+[data-annytrade][data-at-theme="dark"] [class*="text-[#0f172a]"],
+[data-annytrade][data-at-theme="terminal"] .text-\[\#020617\],
+[data-annytrade][data-at-theme="terminal"] .text-\[\#0f172a\],
+[data-annytrade][data-at-theme="terminal"] [class*="text-[#020617]"],
+[data-annytrade][data-at-theme="terminal"] [class*="text-[#0f172a]"] {
   color: var(--at-text) !important;
 }
 
-[data-annytrade][data-at-theme="dark"] .at-card-header,
-[data-annytrade][data-at-theme="dark"] .at-card-header h2 {
+/* Catch any leftover near-black inline/hardcoded copy in dark/terminal */
+[data-annytrade][data-at-theme="dark"] .at-shell,
+[data-annytrade][data-at-theme="terminal"] .at-shell {
   color: var(--at-text);
+}
+
+[data-annytrade][data-at-theme="dark"] .at-card,
+[data-annytrade][data-at-theme="terminal"] .at-card {
+  color: var(--at-text);
+}
+
+[data-annytrade][data-at-theme="dark"] .at-card-header,
+[data-annytrade][data-at-theme="dark"] .at-card-header h2,
+[data-annytrade][data-at-theme="terminal"] .at-card-header,
+[data-annytrade][data-at-theme="terminal"] .at-card-header h2 {
+  color: var(--at-text);
+}
+
+[data-annytrade][data-at-theme="dark"] .at-mono:not(.at-up):not(.at-down),
+[data-annytrade][data-at-theme="terminal"] .at-mono:not(.at-up):not(.at-down) {
+  color: inherit;
 }
 
 [data-annytrade][data-at-theme="dark"] .at-desk-nav {
   background: var(--at-bg-elevated);
   border-bottom-color: var(--at-border);
+  color: var(--at-text);
 }
 
 [data-annytrade][data-at-theme="dark"] .at-desk-nav-link[data-active="true"],

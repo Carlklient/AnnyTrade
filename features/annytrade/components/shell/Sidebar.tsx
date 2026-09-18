@@ -70,7 +70,7 @@ export function Sidebar() {
                 "flex items-center gap-2.5 rounded-[8px] px-2.5 py-2 text-[0.8125rem] font-medium transition-colors",
                 active
                   ? "text-[var(--at-text)]"
-                  : "font-bold text-[#020617] hover:bg-[var(--at-surface-2)] hover:text-[var(--at-text)]",
+                  : "font-bold text-[var(--at-text)] hover:bg-[var(--at-surface-2)] hover:text-[var(--at-text)]",
               )}
               style={
                 active
@@ -92,7 +92,7 @@ export function Sidebar() {
         className="space-y-2 border-t px-3 py-3"
         style={{ borderColor: "var(--at-border)" }}
       >
-        <p className="text-[0.7rem] leading-relaxed font-bold text-[#020617]">
+        <p className="text-[0.7rem] leading-relaxed font-bold text-[var(--at-text)]">
           Portfolio demo, simulated market data. Paper accounts persist when
           signed in.
         </p>
@@ -105,7 +105,7 @@ export function Sidebar() {
           </Link>
           <Link
             href={annytradeRoutes.auth.login}
-            className="text-[0.7rem] font-bold text-[#020617] hover:font-bold"
+            className="text-[0.7rem] font-bold text-[var(--at-text)] hover:font-bold"
           >
             Sign in
           </Link>

@@ -65,7 +65,7 @@ export function NotificationsView() {
             Notifications
           </h1>
           {!auth.authenticated ? (
-            <p className="mt-1 text-[0.75rem] font-bold text-[#020617]">
+            <p className="mt-1 text-[0.75rem] font-bold text-[var(--at-text)]">
               Showing demo notifications.{" "}
               <Link
                 href={annytradeRoutes.auth.login}
@@ -87,7 +87,7 @@ export function NotificationsView() {
       </div>
 
       {items === null ? (
-        <p className="text-[0.8125rem] font-bold text-[#020617]">Loading…</p>
+        <p className="text-[0.8125rem] font-bold text-[var(--at-text)]">Loading…</p>
       ) : null}
 
       <ul className="space-y-2">
@@ -105,12 +105,12 @@ export function NotificationsView() {
               <div className="min-w-0 flex-1">
                 <div className="flex flex-wrap items-center gap-2">
                   <span className="at-badge">{n.type}</span>
-                  <span className="text-[0.7rem] font-bold text-[#020617]">
+                  <span className="text-[0.7rem] font-bold text-[var(--at-text)]">
                     {formatCompactTime(n.createdAt)}
                   </span>
                 </div>
                 <p className="mt-1 text-sm font-semibold">{n.title}</p>
-                <p className="text-[0.8125rem] font-bold text-[#020617]">
+                <p className="text-[0.8125rem] font-bold text-[var(--at-text)]">
                   {n.message}
                 </p>
               </div>
