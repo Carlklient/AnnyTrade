@@ -33,8 +33,9 @@ import {
 } from "../../lib/chart-drawings";
 import { useAnnyTrade } from "../../context/AnnyTradeContext";
 import { useInstrument } from "../../hooks/useInstrument";
-import { useQuote } from "../../hooks/useQuotes";
+import { useLiveQuote } from "../../hooks/useQuotes";
 import { useCandles } from "../../hooks/useCandles";
+import { useWatchlistSymbols } from "../../hooks/useWatchlistSymbols";
 import {
   freshnessLabel,
   num,
@@ -88,7 +89,9 @@ export function TradeView({ symbol }: TradeViewProps) {
     error: instError,
     notFound,
   } = useInstrument(sym);
-  const { quote, loading: quoteLoading, error: quoteError } = useQuote(sym);
+  const { quote, loading: quoteLoading, error: quoteError } = useLiveQuote(sym);
+  const { symbols: watchSymbols } = useWatchlistSymbols();
+  const [bookOpen, setBookOpen] = useState(false);
   const [prefsReady, setPrefsReady] = useState(false);
   const [timeframe, setTimeframe] = useState(TIMEFRAMES[2]!);
   const [indicatorFlags, setIndicatorFlags] = useState<ChartIndicatorFlags>(
@@ -167,9 +170,15 @@ export function TradeView({ symbol }: TradeViewProps) {
   const high = demoFallback ? demoAsset!.high : num(quote?.high);
   const low = demoFallback ? demoAsset!.low : num(quote?.low);
   const book = useMemo(
-    () => buildIllustrativeOrderBook({ last, bid, ask }),
-    [last, bid, ask],
+    () => buildIllustrativeOrderBook({ last, bid, ask, symbol: sym }),
+    [last, bid, ask, sym],
   );
+
+  function pickBookPrice(price: number) {
+    setLimitPrice(price);
+    setOrderType("LIMIT");
+    setMessage(`Limit set from depth @ ${formatPrice(price)}`);
+  }
 
   useEffect(() => {
     if (last != null) {
@@ -432,6 +441,23 @@ export function TradeView({ symbol }: TradeViewProps) {
     <div className="at-terminal">
       <InstrumentsRail activeSymbol={sym} />
       <div className="at-terminal-center space-y-3">
+        <div className="at-mobile-symbol-strip" aria-label="Watchlist symbols">
+          {(watchSymbols.length > 0 ? watchSymbols : [sym])
+            .slice(0, 12)
+            .map((s) => {
+              const active = s.toUpperCase() === sym;
+              return (
+                <Link
+                  key={s}
+                  href={annytradeRoutes.trade(s)}
+                  className="at-mobile-symbol-chip"
+                  data-active={active ? "true" : "false"}
+                >
+                  {s.toUpperCase()}
+                </Link>
+              );
+            })}
+        </div>
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
             <p className="at-label capitalize">
@@ -677,26 +703,43 @@ export function TradeView({ symbol }: TradeViewProps) {
           </div>
 
           <div className="space-y-4">
-            <div className="at-card">
+            <div className="at-card at-order-book-card">
               <div className="at-card-header">
                 <h2 className="text-sm font-semibold">Order book</h2>
-                <span className="at-badge at-badge-demo">Illustrative</span>
+                <div className="flex items-center gap-2">
+                  <span className="at-badge at-badge-demo">Illustrative</span>
+                  <button
+                    type="button"
+                    className="at-btn at-btn-ghost h-7 px-2 text-[0.65rem] lg:hidden"
+                    onClick={() => setBookOpen((o) => !o)}
+                    aria-expanded={bookOpen}
+                  >
+                    {bookOpen ? "Hide" : "Show"}
+                  </button>
+                </div>
               </div>
-              <div className="at-card-body space-y-3 pt-2">
+              <div
+                className={`at-card-body space-y-3 pt-2 ${bookOpen ? "" : "max-lg:hidden"}`}
+              >
                 <p className="text-[0.65rem] font-bold text-[#020617]">
-                  Simulated ladder from quote · not live Level 2 / exchange
-                  depth.
+                  Simulated ladder from quote · tap a price to seed a limit ·
+                  not live Level 2.
                 </p>
                 {book ? (
                   <>
                     <DepthSide
                       levels={book.asks.slice().reverse()}
                       tone="sell"
+                      onPick={pickBookPrice}
                     />
                     <div className="at-mono py-1 text-center text-sm font-semibold">
                       {last != null ? formatPrice(last) : "n/a"}
                     </div>
-                    <DepthSide levels={book.bids} tone="buy" />
+                    <DepthSide
+                      levels={book.bids}
+                      tone="buy"
+                      onPick={pickBookPrice}
+                    />
                   </>
                 ) : (
                   <p className="text-[0.8125rem] font-bold text-[#020617]">
@@ -1111,36 +1154,42 @@ function Field({
 function DepthSide({
   levels,
   tone,
+  onPick,
 }: {
   levels: { price: number; size: number; total: number }[];
   tone: "buy" | "sell";
+  onPick?: (price: number) => void;
 }) {
   const max = Math.max(...levels.map((l) => l.total), 1);
   return (
     <ul className="space-y-1">
       {levels.map((l) => (
-        <li
-          key={l.price}
-          className="relative grid grid-cols-3 gap-2 px-1 py-0.5 text-[0.7rem]"
-        >
-          <span
-            className="absolute inset-y-0 right-0 rounded-sm opacity-30"
-            style={{
-              width: `${(l.total / max) * 100}%`,
-              background: tone === "buy" ? "var(--at-buy)" : "var(--at-sell)",
-            }}
-          />
-          <span
-            className={`at-mono relative ${tone === "buy" ? "at-up" : "at-down"}`}
+        <li key={l.price}>
+          <button
+            type="button"
+            className="relative grid w-full grid-cols-3 gap-2 px-1 py-0.5 text-left text-[0.7rem]"
+            onClick={() => onPick?.(l.price)}
+            title={onPick ? `Set limit @ ${l.price}` : undefined}
           >
-            {formatPrice(l.price)}
-          </span>
-          <span className="at-mono relative text-right font-bold text-[#020617]">
-            {l.size}
-          </span>
-          <span className="at-mono relative text-right font-bold text-[#020617]">
-            {l.total}
-          </span>
+            <span
+              className="absolute inset-y-0 right-0 rounded-sm opacity-30"
+              style={{
+                width: `${(l.total / max) * 100}%`,
+                background: tone === "buy" ? "var(--at-buy)" : "var(--at-sell)",
+              }}
+            />
+            <span
+              className={`at-mono relative ${tone === "buy" ? "at-up" : "at-down"}`}
+            >
+              {formatPrice(l.price)}
+            </span>
+            <span className="at-mono relative text-right font-bold text-[#020617]">
+              {l.size}
+            </span>
+            <span className="at-mono relative text-right font-bold text-[#020617]">
+              {l.total}
+            </span>
+          </button>
         </li>
       ))}
     </ul>

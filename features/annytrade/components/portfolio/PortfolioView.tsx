@@ -32,6 +32,7 @@ export function PortfolioView() {
   const [open, setOpen] = useState<PublicPosition[]>([]);
   const [closed, setClosed] = useState<PublicPosition[]>([]);
   const [pending, setPending] = useState<PublicOrder[]>([]);
+  const [historyOrders, setHistoryOrders] = useState<PublicOrder[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -40,14 +41,16 @@ export function PortfolioView() {
     setLoading(true);
     setError(null);
     try {
-      const [s, orders, closedPos] = await Promise.all([
+      const [s, openOrders, allOrders, closedPos] = await Promise.all([
         paperTradingClient.summary(),
         paperTradingClient.listOrders({ openOnly: true }),
+        paperTradingClient.listOrders(),
         paperTradingClient.listPositions({ closed: true }),
       ]);
       setSummary(s);
       setOpen(s.positions);
-      setPending(orders.orders);
+      setPending(openOrders.orders);
+      setHistoryOrders(allOrders.orders);
       setClosed(closedPos.positions);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to load portfolio");
@@ -128,6 +131,12 @@ export function PortfolioView() {
         (o) =>
           `order,${o.symbol},${o.quantity},${o.side},${o.orderType},${o.status},${o.limitPrice ?? o.stopPrice ?? ""},,${o.submittedAt}`,
       ),
+      ...historyOrders
+        .filter((o) => !["PENDING", "OPEN", "PARTIALLY_FILLED"].includes(o.status))
+        .map(
+          (o) =>
+            `fill_history,${o.symbol},${o.filledQuantity ?? o.quantity},${o.side},${o.orderType},${o.status},${o.averageFillPrice ?? o.limitPrice ?? ""},,${o.updatedAt ?? o.submittedAt}`,
+        ),
       ...closed.map(
         (p) =>
           `closed,${p.symbol},${p.quantity},,,,${p.realizedPnl ?? ""},${p.closedAt ?? ""}`,
@@ -140,6 +149,51 @@ export function PortfolioView() {
     const a = document.createElement("a");
     a.href = url;
     a.download = `annytrade-paper-portfolio-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  function exportStatement() {
+    if (!summary) return;
+    const asOf = new Date().toISOString();
+    const filled = historyOrders.filter((o) =>
+      ["FILLED", "PARTIALLY_FILLED", "CANCELLED", "REJECTED"].includes(o.status),
+    );
+    const text = [
+      "AnnyTrade PAPER account statement",
+      `As of: ${asOf}`,
+      `Account: ${summary.accountId}`,
+      `Currency: ${summary.currency}`,
+      `Cash: ${summary.cashBalance}`,
+      `Available: ${summary.availableCash}`,
+      `Equity: ${summary.equity}`,
+      `Unrealized PnL: ${summary.unrealizedPnl}`,
+      "",
+      "Open positions",
+      ...open.map(
+        (p) =>
+          `  ${p.symbol} qty=${p.quantity} mark=${p.markPrice ?? "n/a"} uPnL=${p.unrealizedPnl ?? "n/a"}`,
+      ),
+      "",
+      "Order history",
+      ...filled.map(
+        (o) =>
+          `  ${o.submittedAt} ${o.side} ${o.quantity} ${o.symbol} ${o.orderType} ${o.status} avg=${o.averageFillPrice ?? "n/a"}`,
+      ),
+      "",
+      "Closed positions",
+      ...closed.map(
+        (p) =>
+          `  ${p.symbol} qty=${p.quantity} realized=${p.realizedPnl ?? "n/a"} closed=${p.closedAt ?? "n/a"}`,
+      ),
+      "",
+      "Paper only — not a brokerage statement. Live money stays hard-blocked.",
+    ].join("\n");
+    const blob = new Blob([text], { type: "text/plain;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `annytrade-paper-statement-${asOf.slice(0, 10)}.txt`;
     a.click();
     URL.revokeObjectURL(url);
   }
@@ -182,14 +236,24 @@ export function PortfolioView() {
             Portfolio
           </h1>
         </div>
-        <button
-          type="button"
-          className="at-btn at-btn-ghost h-9"
-          onClick={exportCsv}
-          disabled={!summary}
-        >
-          Export CSV
-        </button>
+        <div className="flex flex-wrap gap-2">
+          <button
+            type="button"
+            className="at-btn at-btn-ghost h-9"
+            onClick={exportCsv}
+            disabled={!summary}
+          >
+            Export CSV
+          </button>
+          <button
+            type="button"
+            className="at-btn at-btn-ghost h-9"
+            onClick={exportStatement}
+            disabled={!summary}
+          >
+            Statement
+          </button>
+        </div>
       </div>
 
       {error ? (

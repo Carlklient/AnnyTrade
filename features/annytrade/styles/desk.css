@@ -736,3 +736,37 @@
   font-size: 0.875rem;
   font-weight: 600;
 }
+
+/* Mobile: compact watchlist strip when side rails are hidden */
+.at-mobile-symbol-strip {
+  display: none;
+  gap: 0.4rem;
+  overflow-x: auto;
+  padding-bottom: 0.15rem;
+  -webkit-overflow-scrolling: touch;
+}
+
+.at-mobile-symbol-chip {
+  flex: 0 0 auto;
+  border-radius: 8px;
+  border: 1px solid var(--at-border);
+  background: var(--at-surface-2);
+  color: var(--at-text);
+  padding: 0.35rem 0.65rem;
+  font-size: 0.7rem;
+  font-weight: 700;
+  font-family: var(--at-font-mono);
+  text-decoration: none;
+}
+
+.at-mobile-symbol-chip[data-active="true"] {
+  border-color: color-mix(in srgb, var(--at-accent) 50%, var(--at-border));
+  background: color-mix(in srgb, var(--at-accent) 14%, var(--at-surface));
+  color: var(--at-accent);
+}
+
+@media (max-width: 1099px) {
+  .at-mobile-symbol-strip {
+    display: flex;
+  }
+}

@@ -86,7 +86,7 @@ class QuoteSubscriptionManager {
     void this.tick();
     this.timer = setInterval(() => {
       void this.tick();
-    }, 5_000);
+    }, 2_500);
   }
 
   private stopLoop() {

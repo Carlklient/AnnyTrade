@@ -10,7 +10,7 @@ export function MarketDataBadge() {
   if (loading || !data) {
     return (
       <div
-        className="hidden items-center gap-2 rounded-[8px] border px-2.5 py-1 text-[0.7rem] sm:flex"
+        className="flex items-center gap-2 rounded-[8px] border px-2.5 py-1 text-[0.7rem]"
         style={{
           borderColor: "var(--at-border)",
           background: "var(--at-surface)",
@@ -39,7 +39,7 @@ export function MarketDataBadge() {
 
   return (
     <div
-      className="hidden max-w-[14rem] items-center gap-2 rounded-[8px] border px-2.5 py-1 text-[0.7rem] sm:flex"
+      className="flex max-w-[14rem] items-center gap-2 rounded-[8px] border px-2.5 py-1 text-[0.7rem]"
       style={{
         borderColor: isDemo
           ? "color-mix(in srgb, var(--at-demo) 40%, var(--at-border))"

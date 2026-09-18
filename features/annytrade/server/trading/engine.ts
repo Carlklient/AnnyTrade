@@ -46,9 +46,13 @@ import {
   sub,
 } from "./money";
 import {
+  isPaperSessionTradable,
   marketBuyPrice,
   marketSellPrice,
   paperFeeAmount,
+  paperMarketFillQty,
+  quoteAsk,
+  quoteBid,
   referenceLast,
 } from "./pricing";
 import type { Quote } from "../market/types";
@@ -405,11 +409,11 @@ export function evaluateRestingOrder(
   if (order.order_type === "LIMIT") {
     if (limit == null) return null;
     if (order.side === "BUY") {
-      const ask = marketBuyPrice(quote);
+      const ask = quoteAsk(quote);
       if (ask == null || ask > limit) return null;
       return { fillPrice: Math.min(limit, ask) };
     }
-    const bid = marketSellPrice(quote);
+    const bid = quoteBid(quote);
     if (bid == null || bid < limit) return null;
     return { fillPrice: Math.max(limit, bid) };
   }
@@ -432,8 +436,8 @@ export function evaluateRestingOrder(
     if (stop == null || limit == null) return null;
     if (order.side === "BUY") {
       if (!activated && last < stop) return null;
-      // After activation, behave as limit
-      const ask = marketBuyPrice(quote);
+      // After activation, behave as limit (no market slippage on limit leg)
+      const ask = quoteAsk(quote);
       if (ask == null || ask > limit) {
         return activated || last >= stop
           ? { fillPrice: 0, activateOnly: true }
@@ -442,7 +446,7 @@ export function evaluateRestingOrder(
       return { fillPrice: Math.min(limit, ask) };
     }
     if (!activated && last > stop) return null;
-    const bid = marketSellPrice(quote);
+    const bid = quoteBid(quote);
     if (bid == null || bid < limit) {
       return activated || last <= stop
         ? { fillPrice: 0, activateOnly: true }
@@ -503,15 +507,20 @@ async function tryFillOrder(
     order = await activateStopIfNeeded(tx, order, quote);
 
     if (order.order_type === "MARKET") {
+      if (!isPaperSessionTradable(quote)) {
+        // Leave pending until session reopens (cron / process will retry).
+        return order;
+      }
       const rem = remainingQty(order);
       if (rem <= 0) return order;
+      const fillQty = paperMarketFillQty(rem);
       const px =
         order.side === "BUY" ? marketBuyPrice(quote) : marketSellPrice(quote);
       if (px == null) {
         throw new ApiError(503, "MARKET_DATA", "No executable paper price");
       }
       if (order.side === "BUY") {
-        const need = add(mul(rem, px), paperFeeAmount(mul(rem, px)));
+        const need = add(mul(fillQty, px), paperFeeAmount(mul(fillQty, px)));
         const cash = await availableCashTx(tx, order.account_id);
         // For market, reservation uses 0 limit — check raw balance minus other reserves
         const bal = await ledgerBalanceTx(tx, order.account_id);
@@ -536,7 +545,7 @@ async function tryFillOrder(
         }
       } else {
         const owned = await positionQtyTx(tx, order.account_id, order.symbol);
-        if (rem > owned + 1e-8) {
+        if (fillQty > owned + 1e-8) {
           if (Number(order.filled_quantity) === 0) {
             const rejected = await tx<DbOrder[]>`
               UPDATE annytrade.orders SET
@@ -551,9 +560,13 @@ async function tryFillOrder(
           return order;
         }
       }
-      const fillKey = `fill:${order.id}:${Number(order.filled_quantity)}:${rem}:${px}`;
-      const result = await insertFillAtomic(tx, order, rem, px, fillKey);
+      const fillKey = `fill:${order.id}:${Number(order.filled_quantity)}:${fillQty}:${px}`;
+      const result = await insertFillAtomic(tx, order, fillQty, px, fillKey);
       return result.order;
+    }
+
+    if (!isPaperSessionTradable(quote)) {
+      return order;
     }
 
     const evalResult = evaluateRestingOrder(order, quote);

@@ -2,7 +2,7 @@
   "crons": [
     {
       "path": "/api/annytrade/jobs/cron",
-      "schedule": "0 12 * * *"
+      "schedule": "*/5 * * * *"
     }
   ]
 }

@@ -4,35 +4,49 @@ import Link from "next/link";
 import { useMemo, useState } from "react";
 import { Search } from "lucide-react";
 
-import { useQuotes } from "../../hooks/useQuotes";
+import { useQuotesStream } from "../../hooks/useQuotesStream";
 import { useWatchlistSymbols } from "../../hooks/useWatchlistSymbols";
 import { annytradeRoutes } from "../../lib/routes";
 import { formatPct, formatPrice, pnlClass } from "../../lib/format";
 import { num } from "../../services/market-client";
 
-const FILTERS = ["All", "Forex", "Crypto", "Indices", "Equities"] as const;
+const FILTERS = [
+  "All",
+  "Forex",
+  "Crypto",
+  "Indices",
+  "Equities",
+  "Commodities",
+] as const;
 
 function classify(symbol: string): (typeof FILTERS)[number] {
   const s = symbol.toUpperCase();
-  if (["EURUSD", "GBPUSD", "USDJPY", "AUDUSD", "USDCAD", "NZDUSD"].includes(s))
+  if (
+    ["EURUSD", "GBPUSD", "USDJPY", "AUDUSD", "USDCAD", "NZDUSD"].includes(s)
+  ) {
     return "Forex";
-  if (["BTCUSD", "ETHUSD", "BTC", "ETH"].some((x) => s.includes(x)))
+  }
+  if (
+    ["BTCUSD", "ETHUSD", "SOLUSD", "BTC", "ETH"].some((x) => s.includes(x))
+  ) {
     return "Crypto";
-  if (["SPY", "QQQ", "DIA", "IWM"].includes(s)) return "Indices";
+  }
+  if (["XAUUSD", "XAGUSD", "WTIUSD"].includes(s)) return "Commodities";
+  if (["SPY", "QQQ", "DIA", "IWM", "US500", "NAS100"].includes(s))
+    return "Indices";
   return "Equities";
 }
 
 export function InstrumentsRail({ activeSymbol }: { activeSymbol: string }) {
   const { symbols } = useWatchlistSymbols();
-  const { quotes, loading } = useQuotes(symbols);
+  const { quoteMap, loading } = useQuotesStream(symbols);
   const [q, setQ] = useState("");
   const [filter, setFilter] = useState<(typeof FILTERS)[number]>("All");
 
   const rows = useMemo(() => {
-    const bySym = new Map(quotes.map((x) => [x.symbol.toUpperCase(), x]));
     return symbols
       .map((sym) => {
-        const quote = bySym.get(sym.toUpperCase());
+        const quote = quoteMap[sym.toUpperCase()];
         return {
           symbol: sym.toUpperCase(),
           last: num(quote?.last) ?? null,
@@ -48,7 +62,7 @@ export function InstrumentsRail({ activeSymbol }: { activeSymbol: string }) {
         if (!q.trim()) return true;
         return r.symbol.includes(q.trim().toUpperCase());
       });
-  }, [quotes, symbols, filter, q]);
+  }, [quoteMap, symbols, filter, q]);
 
   return (
     <aside

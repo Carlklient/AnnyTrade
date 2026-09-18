@@ -9,6 +9,8 @@ import {
   PHASE8_LIVE_SUBMISSION_HARD_BLOCK,
 } from "@/features/annytrade/server/execution/live-guard";
 import { securityHeaders } from "@/features/annytrade/server/http/errors";
+import { getMarketDataProvider } from "@/features/annytrade/server/market/factory";
+import { errorTrackingConfigured } from "@/features/annytrade/server/observability/error-tracking";
 import { rateLimitBackendStatus } from "@/features/annytrade/server/security/rate-limit";
 
 export const dynamic = "force-dynamic";
@@ -26,6 +28,7 @@ export async function GET(_request: NextRequest) {
     : { ok: false, latencyMs: null as number | null, error: "not_configured" };
 
   const live = getLiveFlagSnapshot();
+  const market = getMarketDataProvider().meta;
   const ready = db.ok;
 
   const body = {
@@ -38,6 +41,14 @@ export async function GET(_request: NextRequest) {
         configured: dbConfigured,
         ok: db.ok,
         latencyMs: db.latencyMs,
+      },
+      marketData: {
+        providerId: market.providerId,
+        mode: market.mode,
+        freshnessDefault: market.freshnessDefault,
+      },
+      errorTracking: {
+        configured: errorTrackingConfigured(),
       },
       liveTrading: {
         hardBlock: PHASE8_LIVE_SUBMISSION_HARD_BLOCK,

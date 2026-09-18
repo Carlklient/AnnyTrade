@@ -11,7 +11,7 @@ import { annytradeRoutes } from "../../lib/routes";
 import { formatPct, formatPrice, pnlClass } from "../../lib/format";
 import { useInstrumentSearch } from "../../hooks/useInstrumentSearch";
 import { useMarketMeta } from "../../hooks/useMarketMeta";
-import { useQuotes } from "../../hooks/useQuotes";
+import { useQuotesStream } from "../../hooks/useQuotesStream";
 import {
   freshnessLabel,
   marketClient,
@@ -21,6 +21,7 @@ import {
 } from "../../services/market-client";
 import { watchlistClient } from "../../services/watchlist-client";
 import { useAnnyTrade } from "../../context/AnnyTradeContext";
+import { DEMO_CATALOG_SYMBOLS } from "../../lib/demo-catalog";
 
 type Tab =
   | "all"
@@ -45,22 +46,7 @@ const TABS: { id: Tab; label: string; supported: boolean }[] = [
   { id: "losers", label: "Losers", supported: true },
 ];
 
-const DEFAULT_SYMBOLS = [
-  "AAPL",
-  "MSFT",
-  "NVDA",
-  "TSLA",
-  "AMZN",
-  "SPY",
-  "US500",
-  "EURUSD",
-  "GBPUSD",
-  "USDJPY",
-  "XAUUSD",
-  "XAGUSD",
-  "BTCUSD",
-  "ETHUSD",
-];
+const DEFAULT_SYMBOLS = [...DEMO_CATALOG_SYMBOLS];
 
 type Row = {
   instrument: Instrument;
@@ -180,16 +166,16 @@ export function MarketsView() {
 
   const symbols = activeInstruments.map((i) => i.symbol);
   const {
-    quotes,
+    quoteMap: streamMap,
     loading: quotesLoading,
     error: quotesError,
-  } = useQuotes(symbols);
+  } = useQuotesStream(symbols);
 
   const quoteMap = useMemo(() => {
     const m = new Map<string, Quote>();
-    for (const q of quotes) m.set(q.symbol, q);
+    for (const [sym, q] of Object.entries(streamMap)) m.set(sym, q);
     return m;
-  }, [quotes]);
+  }, [streamMap]);
 
   const rows: Row[] = useMemo(() => {
     let list = activeInstruments.map((instrument) => ({
@@ -227,7 +213,6 @@ export function MarketsView() {
     return list;
   }, [activeInstruments, quoteMap, tab]);
 
-  const unsupported = false;
   const loading = baseLoading || (query.trim() ? searchLoading : false);
   const freshness = metaData
     ? freshnessLabel(metaData.meta.freshnessDefault)
@@ -287,12 +272,10 @@ export function MarketsView() {
         ))}
       </div>
 
-      {unsupported ? (
+      {rows.length === 0 && !loading ? (
         <div className="at-card">
           <div className="at-card-body py-10 text-center text-[0.8125rem] font-bold text-[#020617]">
-            This asset class is not live in Phase 2. Scope is US equities / ETFs
-            and major forex pairs. Crypto, indices, and commodities remain
-            unavailable, not simulated as live.
+            No instruments match this filter. Try All or search another symbol.
           </div>
         </div>
       ) : (

@@ -5,6 +5,7 @@ import type {
   Instrument,
   MarketHoursStatus,
   Quote,
+  SessionPhase,
 } from "../types";
 import { MarketDataError } from "../types";
 import { decimalString, isValidOhlc, normalizeSymbol } from "../normalize";
@@ -66,6 +67,28 @@ const UNIVERSE: Instrument[] = [
     timezone: "America/New_York",
   },
   {
+    id: "eq:META",
+    symbol: "META",
+    displaySymbol: "META",
+    name: "Meta Platforms, Inc.",
+    assetClass: "equity",
+    exchange: "XNAS",
+    currency: "USD",
+    status: "active",
+    timezone: "America/New_York",
+  },
+  {
+    id: "eq:GOOGL",
+    symbol: "GOOGL",
+    displaySymbol: "GOOGL",
+    name: "Alphabet Inc. Class A",
+    assetClass: "equity",
+    exchange: "XNAS",
+    currency: "USD",
+    status: "active",
+    timezone: "America/New_York",
+  },
+  {
     id: "etf:SPY",
     symbol: "SPY",
     displaySymbol: "SPY",
@@ -77,10 +100,43 @@ const UNIVERSE: Instrument[] = [
     timezone: "America/New_York",
   },
   {
+    id: "etf:QQQ",
+    symbol: "QQQ",
+    displaySymbol: "QQQ",
+    name: "Invesco QQQ Trust",
+    assetClass: "etf",
+    exchange: "XNAS",
+    currency: "USD",
+    status: "active",
+    timezone: "America/New_York",
+  },
+  {
+    id: "etf:IWM",
+    symbol: "IWM",
+    displaySymbol: "IWM",
+    name: "iShares Russell 2000 ETF",
+    assetClass: "etf",
+    exchange: "ARCX",
+    currency: "USD",
+    status: "active",
+    timezone: "America/New_York",
+  },
+  {
     id: "idx:US500",
     symbol: "US500",
     displaySymbol: "US500",
     name: "S&P 500 Index (CFD demo)",
+    assetClass: "index",
+    exchange: "INDEX",
+    currency: "USD",
+    status: "active",
+    timezone: "America/New_York",
+  },
+  {
+    id: "idx:NAS100",
+    symbol: "NAS100",
+    displaySymbol: "NAS100",
+    name: "Nasdaq-100 Index (CFD demo)",
     assetClass: "index",
     exchange: "INDEX",
     currency: "USD",
@@ -121,6 +177,28 @@ const UNIVERSE: Instrument[] = [
     timezone: "UTC",
   },
   {
+    id: "fx:AUDUSD",
+    symbol: "AUDUSD",
+    displaySymbol: "AUD/USD",
+    name: "Australian Dollar / US Dollar",
+    assetClass: "forex",
+    exchange: "FX",
+    currency: "USD",
+    status: "active",
+    timezone: "UTC",
+  },
+  {
+    id: "fx:USDCAD",
+    symbol: "USDCAD",
+    displaySymbol: "USD/CAD",
+    name: "US Dollar / Canadian Dollar",
+    assetClass: "forex",
+    exchange: "FX",
+    currency: "CAD",
+    status: "active",
+    timezone: "UTC",
+  },
+  {
     id: "cmd:XAUUSD",
     symbol: "XAUUSD",
     displaySymbol: "XAU/USD",
@@ -136,6 +214,17 @@ const UNIVERSE: Instrument[] = [
     symbol: "XAGUSD",
     displaySymbol: "XAG/USD",
     name: "Silver / US Dollar",
+    assetClass: "commodity",
+    exchange: "CMDTY",
+    currency: "USD",
+    status: "active",
+    timezone: "UTC",
+  },
+  {
+    id: "cmd:WTIUSD",
+    symbol: "WTIUSD",
+    displaySymbol: "WTI/USD",
+    name: "Crude Oil WTI (demo)",
     assetClass: "commodity",
     exchange: "CMDTY",
     currency: "USD",
@@ -164,7 +253,21 @@ const UNIVERSE: Instrument[] = [
     status: "active",
     timezone: "UTC",
   },
+  {
+    id: "crypto:SOLUSD",
+    symbol: "SOLUSD",
+    displaySymbol: "SOL/USD",
+    name: "Solana / US Dollar",
+    assetClass: "crypto",
+    exchange: "CRYPTO",
+    currency: "USD",
+    status: "active",
+    timezone: "UTC",
+  },
 ];
+
+/** Public demo catalog symbols for Markets / rails. */
+export { DEMO_CATALOG_SYMBOLS } from "../../../lib/demo-catalog";
 
 const BASE: Record<string, number> = {
   AAPL: 214.32,
@@ -172,16 +275,78 @@ const BASE: Record<string, number> = {
   NVDA: 128.74,
   TSLA: 248.6,
   AMZN: 186.4,
+  META: 512.4,
+  GOOGL: 168.2,
   SPY: 561.18,
+  QQQ: 482.1,
+  IWM: 218.5,
   US500: 5620.5,
+  NAS100: 19840,
   EURUSD: 1.08452,
   GBPUSD: 1.27341,
   USDJPY: 149.82,
+  AUDUSD: 0.6621,
+  USDCAD: 1.3612,
   XAUUSD: 2385.4,
   XAGUSD: 28.65,
+  WTIUSD: 78.4,
   BTCUSD: 67420,
   ETHUSD: 3450.2,
+  SOLUSD: 148.6,
 };
+
+/** Half-spread fraction by asset class (ask = last*(1+h), bid = last*(1-h)). */
+function halfSpread(assetClass: Instrument["assetClass"]): number {
+  switch (assetClass) {
+    case "forex":
+      return 0.00004;
+    case "crypto":
+      return 0.00035;
+    case "commodity":
+      return 0.00012;
+    case "index":
+      return 0.00008;
+    case "etf":
+      return 0.00006;
+    default:
+      return 0.0001;
+  }
+}
+
+function usEquitySessionPhase(now = new Date()): SessionPhase {
+  // Approximate US RTH in America/New_York via UTC offset (EST/EDT rough).
+  const parts = new Intl.DateTimeFormat("en-US", {
+    timeZone: "America/New_York",
+    weekday: "short",
+    hour: "numeric",
+    minute: "numeric",
+    hour12: false,
+  }).formatToParts(now);
+  const weekday = parts.find((p) => p.type === "weekday")?.value ?? "";
+  if (weekday === "Sat" || weekday === "Sun") return "closed";
+  const hour = Number(parts.find((p) => p.type === "hour")?.value ?? "0");
+  const minute = Number(parts.find((p) => p.type === "minute")?.value ?? "0");
+  const mins = hour * 60 + minute;
+  if (mins < 4 * 60) return "closed";
+  if (mins < 9 * 60 + 30) return "premarket";
+  if (mins < 16 * 60) return "regular";
+  if (mins < 20 * 60) return "afterhours";
+  return "closed";
+}
+
+function sessionForInstrument(
+  instrument: Instrument,
+  now = new Date(),
+): SessionPhase {
+  if (
+    instrument.assetClass === "crypto" ||
+    instrument.assetClass === "forex" ||
+    instrument.assetClass === "commodity"
+  ) {
+    return "regular";
+  }
+  return usEquitySessionPhase(now);
+}
 
 function seedWave(symbol: string, i: number): number {
   const base = BASE[symbol] ?? 100;
@@ -201,8 +366,10 @@ function buildQuote(symbol: string, now = Date.now()): Quote {
   const prev = seedWave(sym, Math.floor(now / 60_000) - 1);
   const change = last - prev;
   const changePercent = (change / prev) * 100;
-  const bid = last * 0.9999;
-  const ask = last * 1.0001;
+  const hs = halfSpread(instrument.assetClass);
+  const bid = last * (1 - hs);
+  const ask = last * (1 + hs);
+  const marketStatus = sessionForInstrument(instrument, new Date(now));
   return {
     instrumentId: instrument.id,
     symbol: sym,
@@ -217,7 +384,7 @@ function buildQuote(symbol: string, now = Date.now()): Quote {
     changePercent: decimalString(changePercent),
     volume: decimalString(1_000_000 + (sym.charCodeAt(0) % 9) * 100_000),
     timestamp: new Date(now).toISOString(),
-    marketStatus: "regular",
+    marketStatus,
     freshness: "DEMO",
     delayMinutes: null,
   };
@@ -332,12 +499,16 @@ export function createDemoMarketDataProvider(): MarketDataProvider {
     },
 
     async getMarketStatus(market = "US"): Promise<MarketHoursStatus> {
+      const status =
+        market === "US" || market === "EQUITY"
+          ? usEquitySessionPhase()
+          : "regular";
       return {
         market,
-        status: "regular",
+        status,
         opensAt: null,
         closesAt: null,
-        timezone: market === "US" ? "America/New_York" : "UTC",
+        timezone: market === "CRYPTO" || market === "FX" ? "UTC" : "America/New_York",
         freshness: "DEMO",
       };
     },
