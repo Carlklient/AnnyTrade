@@ -180,7 +180,7 @@ export function WalletView() {
           <div className="flex items-center gap-2">
             <Sparkles className="size-5 text-[var(--at-accent)]" />
             <h1
-              className="text-xl font-bold"
+              className="text-xl font-bold text-[var(--at-text)]"
               style={{ fontFamily: "var(--at-font-display)" }}
             >
               Practice top-up

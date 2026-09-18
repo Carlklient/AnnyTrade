@@ -40,6 +40,36 @@
   color: var(--at-text);
   font-family: var(--at-font-sans);
   min-height: 100dvh;
+
+  /* Remap global site tokens so base.css h1/h2/body don't stay light-theme black */
+  --color-text-primary: var(--at-text);
+  --color-text-secondary: var(--at-text-secondary);
+  --color-text-tertiary: var(--at-text-muted);
+  --color-foreground: var(--at-text);
+  --color-muted-foreground: var(--at-text-secondary);
+  --color-background: var(--at-bg);
+  --color-card: var(--at-surface);
+  --color-card-foreground: var(--at-text);
+  --color-border: var(--at-border);
+}
+
+[data-annytrade] :is(h1, h2, h3, h4, h5, h6) {
+  color: var(--at-text) !important;
+  font-family: var(--at-font-display);
+}
+
+[data-annytrade] :is(h1, h2, h3, h4, h5, h6) a {
+  color: inherit;
+}
+
+[data-annytrade] a:not([class*="at-btn"]):not([class*="atl-"]):not(.at-up):not(.at-down) {
+  color: inherit;
+}
+
+[data-annytrade] a.text-\[var\(--at-accent\)\],
+[data-annytrade] a[class*="text-[var(--at-accent)]"],
+[data-annytrade] .text-\[var\(--at-accent\)\] {
+  color: var(--at-accent) !important;
 }
 
 [data-annytrade][data-at-theme="light"] {

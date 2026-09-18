@@ -51,7 +51,7 @@ export function NewsView({ symbolFilter }: { symbolFilter?: string }) {
         <div>
           <p className="at-label">Coverage, {metaLabel || "…"}</p>
           <h1
-            className="text-2xl font-semibold"
+            className="text-2xl font-semibold text-[var(--at-text)]"
             style={{ fontFamily: "var(--at-font-display)" }}
           >
             Market news
@@ -124,12 +124,12 @@ export function NewsView({ symbolFilter }: { symbolFilter?: string }) {
                 ) : null}
                 <span className="at-badge">{n.freshness}</span>
               </div>
-              <h2 className="text-base font-semibold">
+              <h2 className="text-base font-semibold text-[var(--at-text)]">
                 <a
                   href={n.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="hover:text-[var(--at-accent)]"
+                  className="text-[var(--at-text)] hover:text-[var(--at-accent)]"
                 >
                   {n.headline}
                 </a>

@@ -55,6 +55,11 @@
   --at-radius-sm: 10px;
   --at-radius-lg: 20px;
   --at-topbar-h: 60px;
+  color-scheme: dark;
+  --color-text-primary: var(--at-text);
+  --color-text-secondary: var(--at-text-secondary);
+  --color-foreground: var(--at-text);
+  --color-background: var(--at-bg);
 }
 
 [data-annytrade][data-at-theme="dark"] .at-content,
