@@ -2,6 +2,7 @@ import Link from "next/link";
 
 import { annytradeRoutes } from "../../lib/routes";
 import { BrandMark, LandingNav } from "./LandingNav";
+import { MakerCredit } from "./MakerCredit";
 import { RegisterQr } from "./RegisterQr";
 import { TradeDeviceMock } from "./TradeDeviceMock";
 import "../../styles/landing.css";
@@ -406,6 +407,7 @@ export function LandingPage() {
                 <BrandMark />
                 <span className="atl-brand-name">annytrade</span>
               </Link>
+              <MakerCredit />
             </div>
             <div>
               <h4>Company</h4>

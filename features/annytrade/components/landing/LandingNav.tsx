@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useId, useRef, useState } from "react";
 
 import { annytradeRoutes } from "../../lib/routes";
+import { MakerCredit } from "./MakerCredit";
 
 export function BrandMark() {
   return (
@@ -62,14 +63,17 @@ export function LandingNav() {
 
   return (
     <header className="atl-nav" ref={rootRef}>
-      <Link
-        href={annytradeRoutes.root}
-        className="atl-brand"
-        aria-label="AnnyTrade home"
-      >
-        <BrandMark />
-        <span className="atl-brand-name">annytrade</span>
-      </Link>
+      <div className="atl-brand-wrap">
+        <Link
+          href={annytradeRoutes.root}
+          className="atl-brand"
+          aria-label="AnnyTrade home"
+        >
+          <BrandMark />
+          <span className="atl-brand-name">annytrade</span>
+        </Link>
+        <MakerCredit compact />
+      </div>
       <div className="atl-nav-actions">
         <Link
           href={annytradeRoutes.auth.login}

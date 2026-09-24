@@ -1306,3 +1306,38 @@
     opacity: 1;
   }
 }
+
+[data-at-landing] .atl-brand-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  align-items: flex-start;
+}
+
+[data-at-landing] .atl-maker {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  text-decoration: none;
+  font-size: 0.72rem;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  color: #64748b;
+  margin-top: 0.35rem;
+  transition: color 0.15s ease;
+}
+
+[data-at-landing] .atl-maker:hover {
+  color: #0f172a;
+}
+
+[data-at-landing] .atl-maker__mark {
+  width: 14px;
+  height: 16px;
+  flex-shrink: 0;
+}
+
+[data-at-landing] .atl-maker--compact .atl-maker__mark {
+  width: 12px;
+  height: 14px;
+}
