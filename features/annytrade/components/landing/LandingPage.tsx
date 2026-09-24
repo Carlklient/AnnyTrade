@@ -9,7 +9,7 @@ import "../../styles/landing.css";
 const EDGE = [
   {
     title: "Secure account access",
-    body: "Session-based auth with encrypted credentials and server-side controls.",
+    body: "Session based auth with encrypted credentials and server side controls.",
     icon: (
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden>
         <path
@@ -50,7 +50,7 @@ const EDGE = [
     ),
   },
   {
-    title: "Multi-market instruments",
+    title: "Multi market instruments",
     body: "Equities, FX, and more in one desk with search, watchlists, and charts.",
     icon: (
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden>
@@ -77,7 +77,7 @@ const GROW = [
   },
   {
     title: "Clear product notes",
-    body: "Risk disclosures keep expectations honest — PAPER only, no live brokerage.",
+    body: "Risk disclosures keep expectations honest: PAPER only, no live brokerage.",
   },
   {
     title: "Trading tools",
@@ -91,9 +91,9 @@ const GROW = [
 
 const MILESTONES = [
   { year: "Phase 3", label: "Paper trading engine" },
-  { year: "Phase 5", label: "Charts & signal desk" },
+  { year: "Phase 5", label: "Charts and signal desk" },
   { year: "Phase 7", label: "Broker sandbox architecture" },
-  { year: "Phase 10", label: "Ops & admin readiness" },
+  { year: "Phase 10", label: "Ops and admin readiness" },
 ] as const;
 
 const INK = { color: "#000000", WebkitTextFillColor: "#000000", opacity: 1 } as const;
@@ -141,7 +141,7 @@ export function LandingPage() {
               Broker that empowers your growth
             </h1>
             <p className="atl-support" style={{ color: "#0f172a" }}>
-              Trade with a focused multi-market desk, paper capital, clear
+              Trade with a focused multi market desk, paper capital, clear
               charts, and tools built to help you practise every decision.
             </p>
             <div className="atl-cta-row">
@@ -221,7 +221,7 @@ export function LandingPage() {
               </div>
             </article>
             <article className="atl-analyse-card">
-              <h3 style={INK}>Signal & risk support</h3>
+              <h3 style={INK}>Signal and risk support</h3>
               <p style={{ color: "#0f172a" }}>
                 Educational rule based signals with clear disclosures, never
                 presented as guaranteed outcomes.
@@ -376,14 +376,14 @@ export function LandingPage() {
             <h2 style={INK}>Trade on the go with the AnnyTrade desk</h2>
             <p style={{ color: "#0f172a" }}>
               Open the web desk on any device. Scan to jump straight into
-              account creation, no app-store install required for this demo.
+              account creation, no app store install required for this demo.
             </p>
             <div className="atl-qr-row">
               <RegisterQr />
               <div>
                 <div className="atl-qr-label">Scan to open account</div>
                 <p className="atl-qr-hint">
-                  Phone camera opens signup. Or tap the code / Enter desk.
+                  Phone camera opens signup. Or tap the code or Enter desk.
                 </p>
                 <Link
                   href={annytradeRoutes.dashboard}
@@ -448,7 +448,7 @@ export function LandingPage() {
             </div>
           </div>
           <p className="atl-legal">
-            AnnyTrade is a product demonstration / paper trading platform. It is
+            AnnyTrade is a product demonstration and paper trading platform. It is
             not a licensed broker dealer and does not provide investment advice.
             Trading involves risk of loss. Signals are educational and do not
             guarantee outcomes. Broker Live execution remains disabled. This
